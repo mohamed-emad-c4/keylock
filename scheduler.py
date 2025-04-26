@@ -333,22 +333,27 @@ class ScheduleManager:
             logger.info(f"Scheduled {schedule.name} to run at {target_time}")
     
     def _execute_schedule(self, schedule_id: str):
-        """Execute a scheduled action"""
+        """Execute a scheduled task"""
         with self.lock:
             if schedule_id not in self.schedules:
-                logger.warning(f"Schedule {schedule_id} not found when executing")
+                logger.warning(f"Schedule {schedule_id} not found for execution")
                 return
-            
+                
             schedule = self.schedules[schedule_id]
-            schedule.timer = None  # Clear the timer
+            
+            if not schedule.enabled:
+                logger.info(f"Schedule {schedule.name} ({schedule.id}) is disabled, skipping execution")
+                return
+                
+            logger.info(f"Executing schedule: {schedule.name} ({schedule.id})")
             
             try:
-                logger.info(f"Executing schedule: {schedule.name} ({schedule.id})")
-                # Execute the appropriate lock action
+                # Call the lock callback with the action type
                 self.lock_callback(schedule.action)
                 
-                # If duration is set, schedule the unlock
+                # If there's a duration, schedule an unlock
                 if schedule.duration is not None:
+                    logger.info(f"Scheduling unlock in {schedule.duration} seconds")
                     schedule.unlock_timer = threading.Timer(
                         schedule.duration,
                         self._execute_unlock,
@@ -356,33 +361,42 @@ class ScheduleManager:
                     )
                     schedule.unlock_timer.daemon = True
                     schedule.unlock_timer.start()
-                    logger.info(f"Scheduled unlock for {schedule.name} in {schedule.duration} seconds")
                 
-                # If it's not a one-time schedule, schedule next run
-                if schedule.time_type != 'once' and schedule.time_type != 'countdown':
-                    self._schedule_next_run(schedule)
-                elif schedule.time_type == 'once':
-                    # Disable the schedule after it runs once
+                # If it's a one-time schedule, disable it after execution
+                if schedule.time_type == 'once' or schedule.time_type == 'countdown':
                     schedule.enabled = False
                     self._save_schedules()
+                else:
+                    # Schedule the next run for recurring schedules
+                    self._schedule_next_run(schedule)
+                    
             except Exception as e:
                 logger.error(f"Error executing schedule {schedule.name}: {e}")
+                # Try to schedule next run despite error
+                try:
+                    self._schedule_next_run(schedule)
+                except Exception as ex:
+                    logger.error(f"Failed to reschedule {schedule.name}: {ex}")
     
     def _execute_unlock(self, schedule_id: str):
-        """Execute scheduled unlock"""
+        """Execute the unlock operation for a schedule"""
         with self.lock:
             if schedule_id not in self.schedules:
-                logger.warning(f"Schedule {schedule_id} not found when unlocking")
+                logger.warning(f"Schedule {schedule_id} not found for unlock operation")
                 return
-            
+                
             schedule = self.schedules[schedule_id]
-            schedule.unlock_timer = None  # Clear the timer
+            logger.info(f"Executing unlock for schedule: {schedule.name} ({schedule.id})")
             
             try:
-                logger.info(f"Executing unlock for schedule: {schedule.name}")
+                # Call the unlock callback
                 self.unlock_callback()
+                
+                # Clear the unlock timer reference
+                schedule.unlock_timer = None
+                
             except Exception as e:
-                logger.error(f"Error unlocking for schedule {schedule.name}: {e}")
+                logger.error(f"Error executing unlock for schedule {schedule.name}: {e}")
     
     def _scheduler_loop(self):
         """Main scheduler loop for checking and executing schedules"""

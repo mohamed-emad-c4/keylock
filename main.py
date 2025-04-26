@@ -17,6 +17,7 @@ from ui_components import (
     ThemedCheckbutton, ResponsiveGrid, Card, Tooltip, 
     TabView, setup_theme, create_window, center_window
 )
+import time
 
 # Global variables
 config = None
@@ -35,6 +36,7 @@ debounce_timer = None
 COLORS = {}
 schedule_manager = None
 app_icon = None
+countdown_active = False
 
 
 def initialize_app():
@@ -339,110 +341,163 @@ def spacious_layout():
 
 
 def configure_styles():
-    """Configure the UI styles"""
+    """Configure the styles for the application"""
     try:
-        # Create custom styles
-        default_font = font.nametofont("TkDefaultFont")
-        default_font.configure(family="Segoe UI", size=10)
-        root.option_add("*Font", default_font)
-        
-        # Configure ttk styles
         style = ttk.Style()
+        style.theme_use('clam')  # Use a modern base theme
+
+        # Ensure we have all necessary colors in the COLORS dictionary
+        initialize_colors()
         
-        # Configure the notebook tabs with modern styling
-        style.configure("TNotebook", background=COLORS["bg"], borderwidth=0)
-        style.configure("TNotebook.Tab", 
-            background=COLORS["highlight"], 
+        # Configure styles for various UI elements
+        style.configure(
+            "TFrame", 
+            background=COLORS["bg"]
+        )
+        
+        style.configure(
+            "TLabel", 
+            background=COLORS["bg"], 
             foreground=COLORS["text"],
-            padding=(12, 6),
-            borderwidth=0,
             font=("Segoe UI", 10)
         )
-        style.map("TNotebook.Tab",
-            background=[("selected", COLORS["accent"])],
-            foreground=[("selected", "white")]
-        )
         
-        # Configure buttons
-        style.configure("TButton", 
-            background=COLORS["accent"], 
-            foreground="white", 
-            borderwidth=0,
-            focuscolor=COLORS["accent"],
-            padding=10,
-            font=("Segoe UI", 10)
-        )
-        style.map("TButton",
-            background=[("active", "#0069d9")],
-            relief=[("pressed", "flat"), ("!pressed", "flat")]
-        )
-        
-        # Configure entry fields
-        style.configure("TEntry", 
-            padding=8,
-            fieldbackground=COLORS["highlight"],
-            borderwidth=1,
-        )
-        
-        # Configure treeview with enhanced styling
-        style.configure("Treeview",
-            background=COLORS["bg"],
+        style.configure(
+            "Header.TLabel",
+            font=("Segoe UI", 16, "bold"),
             foreground=COLORS["text"],
-            fieldbackground=COLORS["bg"],
-            borderwidth=1,
-            rowheight=28
+            background=COLORS["bg"]
         )
-        style.map("Treeview",
-            background=[("selected", COLORS["accent"])],
-            foreground=[("selected", "white")]
-        )
-        style.configure("Treeview.Heading",
-            background=COLORS["highlight"],
+        
+        style.configure(
+            "Subheader.TLabel",
+            font=("Segoe UI", 12),
             foreground=COLORS["text"],
-            padding=6,
-            font=("Segoe UI", 9, "bold")
+            background=COLORS["bg"]
         )
         
-        # Configure scrollbars
-        style.configure("TScrollbar",
-            background=COLORS["bg"],
-            troughcolor=COLORS["highlight"],
-            borderwidth=0,
-            arrowcolor=COLORS["text"]
+        # Configure button styles
+        style.configure(
+            "TButton",
+            background=COLORS["accent"],
+            foreground="white",
+            padding=(10, 5),
+            font=("Segoe UI", 10),
+            relief="flat"
         )
         
-        # Configure frames
-        style.configure("TFrame",
-            background=COLORS["bg"],
-            borderwidth=0
+        style.map(
+            "TButton",
+            background=[("active", COLORS.get("accent_hover", "#0069d9"))],
+            foreground=[("active", "white")]
         )
         
-        # Configure labelframes
-        style.configure("TLabelframe",
-            background=COLORS["bg"],
+        # Configure entry styles
+        style.configure(
+            "TEntry",
+            fieldbackground=COLORS.get("input_bg", COLORS["highlight"]),
             foreground=COLORS["text"],
-            bordercolor=COLORS["border"],
-            labeloutside="true",
+            padding=5,
+            relief="solid",
             borderwidth=1
         )
-        style.configure("TLabelframe.Label",
+        
+        # Configure checkbutton style
+        style.configure(
+            "TCheckbutton",
             background=COLORS["bg"],
             foreground=COLORS["text"],
-            font=("Segoe UI", 10, "bold")
+            font=("Segoe UI", 10)
         )
         
-        # Configure checkbuttons
-        style.configure("TCheckbutton",
+        # Configure radiobutton style
+        style.configure(
+            "TRadiobutton",
             background=COLORS["bg"],
+            foreground=COLORS["text"],
+            font=("Segoe UI", 10)
+        )
+        
+        # Special style for timer display
+        style.configure(
+            "Timer.TLabel",
+            font=("Consolas", 14, "bold"),
+            foreground=COLORS.get("timer_text", COLORS["accent"]),
+            background=COLORS["bg"],
+            padding=10
+        )
+        
+        # Configure scrollbar style
+        style.configure(
+            "TScrollbar",
+            background=COLORS["highlight"],
+            troughcolor=COLORS["bg"],
+            borderwidth=0,
+            arrowsize=14
+        )
+        
+        # Configure treeview style
+        style.configure(
+            "Treeview",
+            background=COLORS.get("input_bg", COLORS["highlight"]),
+            foreground=COLORS["text"],
+            fieldbackground=COLORS.get("input_bg", COLORS["highlight"]),
+            font=("Segoe UI", 9),
+            rowheight=25
+        )
+        
+        style.configure(
+            "Treeview.Heading",
+            font=("Segoe UI", 10, "bold"),
+            background=COLORS["highlight"],
             foreground=COLORS["text"]
         )
-        style.map("TCheckbutton",
-            background=[("active", COLORS["bg"])],
-            foreground=[("active", COLORS["accent"])]
+        
+        # Add hover effect for treeview items
+        style.map(
+            "Treeview",
+            background=[("selected", COLORS["accent"])],
+            foreground=[("selected", "white")]
         )
+        
+        return style
         
     except Exception as e:
         print(f"Error configuring styles: {e}")
+        return None
+
+
+def initialize_colors():
+    """Initialize the COLORS dictionary with all necessary UI colors"""
+    global COLORS
+    
+    # Make sure our COLORS dictionary has all the necessary colors
+    # with appropriate defaults if they're not defined
+    
+    # Core colors - should be already defined
+    if "bg" not in COLORS:
+        COLORS["bg"] = "#F5F5F5"  # Default background
+        
+    if "text" not in COLORS:
+        COLORS["text"] = "#333333"  # Default text color
+        
+    if "accent" not in COLORS:
+        COLORS["accent"] = "#007BFF"  # Default accent color (Blue)
+        
+    if "highlight" not in COLORS:
+        COLORS["highlight"] = "#F0F0F0"  # Default highlight color
+    
+    # Additional colors for enhanced UI
+    COLORS.setdefault("light_text", "#777777")  # For secondary text
+    COLORS.setdefault("border", "#CCCCCC")      # For borders
+    COLORS.setdefault("input_bg", COLORS["highlight"])  # Input background
+    COLORS.setdefault("accent_hover", "#0069d9")  # Darker accent for hover
+    COLORS.setdefault("timer_text", COLORS["accent"])  # For timer text
+    COLORS.setdefault("success", "#28a745")     # Green for success messages
+    COLORS.setdefault("error", "#dc3545")       # Red for errors
+    COLORS.setdefault("warning", "#ffc107")     # Yellow for warnings
+    
+    return COLORS
 
 
 def create_header_section(parent):
@@ -995,19 +1050,31 @@ def unlock_all_devices():
 def create_scheduler_section(parent):
     """Create the scheduler UI section"""
     try:
-        # Header
+        # Header with improved visual hierarchy
         scheduler_header = tk.Label(
             parent, 
             text="Scheduled Locking", 
-            font=("Segoe UI", 16, "bold"), 
+            font=("Segoe UI", 18, "bold"), 
             bg=COLORS["bg"], 
             fg=COLORS["text"]
         )
-        scheduler_header.grid(row=0, column=0, sticky="w", padx=20, pady=(15, 10))
+        scheduler_header.grid(row=0, column=0, sticky="w", padx=20, pady=(20, 15))
         
-        # Schedules list frame
-        schedules_frame = tk.Frame(parent, bg=COLORS["bg"])
-        schedules_frame.grid(row=1, column=0, sticky="nsew", padx=20)
+        # Add a descriptive subheader
+        scheduler_subheader = tk.Label(
+            parent,
+            text="Create and manage scheduled device locks and automatic unlocks", 
+            font=("Segoe UI", 10),
+            bg=COLORS["bg"],
+            fg=COLORS.get("light_text", "#777777")
+        )
+        scheduler_subheader.grid(row=1, column=0, sticky="w", padx=20, pady=(0, 15))
+        
+        # Schedules list frame with improved visual design
+        schedules_frame = tk.Frame(parent, bg=COLORS["bg"], 
+                                  highlightbackground=COLORS.get("border", "#CCCCCC"),
+                                  highlightthickness=1)
+        schedules_frame.grid(row=2, column=0, sticky="nsew", padx=20, pady=5)
         
         # Configure for responsive layout
         schedules_frame.columnconfigure(0, weight=1)
@@ -1031,13 +1098,13 @@ def create_scheduler_section(parent):
         schedule_tree.heading("duration", text="Duration")
         schedule_tree.heading("enabled", text="Status")
         
-        # Define columns
-        schedule_tree.column("name", width=120, minwidth=100)
-        schedule_tree.column("type", width=100, minwidth=80)
-        schedule_tree.column("action", width=80, minwidth=60)
-        schedule_tree.column("time", width=100, minwidth=80)
-        schedule_tree.column("duration", width=80, minwidth=60)
-        schedule_tree.column("enabled", width=60, minwidth=50)
+        # Define columns with improved proportions
+        schedule_tree.column("name", width=130, minwidth=100)
+        schedule_tree.column("type", width=120, minwidth=80)
+        schedule_tree.column("action", width=90, minwidth=60)
+        schedule_tree.column("time", width=110, minwidth=80)
+        schedule_tree.column("duration", width=100, minwidth=60)
+        schedule_tree.column("enabled", width=80, minwidth=50)
         
         # Add schedules to the treeview
         for schedule in schedule_manager.get_schedules():
@@ -1047,11 +1114,11 @@ def create_scheduler_section(parent):
         scrollbar = ttk.Scrollbar(schedules_frame, orient="vertical", command=schedule_tree.yview)
         schedule_tree.configure(yscrollcommand=scrollbar.set)
         scrollbar.grid(row=0, column=1, sticky="ns")
-        schedule_tree.grid(row=0, column=0, sticky="nsew")
+        schedule_tree.grid(row=0, column=0, sticky="nsew", padx=1, pady=1)
         
         # Buttons frame with responsive layout
         buttons_frame = tk.Frame(parent, bg=COLORS["bg"])
-        buttons_frame.grid(row=2, column=0, sticky="ew", padx=20, pady=10)
+        buttons_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
         
         # Configure for responsive design
         buttons_frame.columnconfigure(0, weight=1)
@@ -1068,7 +1135,7 @@ def create_scheduler_section(parent):
             borderwidth=0,
             padx=15,
             pady=8,
-            font=("Segoe UI", 10),
+            font=("Segoe UI", 10, "bold"),
             cursor="hand2",
             activebackground="#0069d9",
             activeforeground="white",
@@ -1126,33 +1193,52 @@ def create_scheduler_section(parent):
         delete_button.bind("<Enter>", lambda e: on_enter(e, delete_button, "#dc3545", "#c82333"))
         delete_button.bind("<Leave>", lambda e: on_leave(e, delete_button, "#dc3545"))
         
+        # Add visual separator 
+        separator = ttk.Separator(parent, orient="horizontal")
+        separator.grid(row=4, column=0, sticky="ew", padx=20, pady=15)
+        
         # Add a countdown timer section with enhanced styling
         countdown_frame = tk.LabelFrame(
             parent, 
             text="Quick Countdown Timer", 
             bg=COLORS["bg"], 
             fg=COLORS["text"],
-            font=("Segoe UI", 11, "bold"),
-            padx=15, 
-            pady=15
+            font=("Segoe UI", 12, "bold"),
+            padx=20, 
+            pady=20,
+            highlightbackground=COLORS.get("border", "#CCCCCC"),
+            highlightthickness=1,
+            bd=1
         )
-        countdown_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
+        countdown_frame.grid(row=5, column=0, sticky="ew", padx=20, pady=10)
+        
+        # Add helpful information text
+        info_text = tk.Label(
+            countdown_frame,
+            text="Lock your devices after a countdown, or set a timed auto-unlock duration",
+            bg=COLORS["bg"],
+            fg=COLORS.get("light_text", "#777777"),
+            font=("Segoe UI", 9),
+            wraplength=500,
+            justify="left"
+        )
+        info_text.grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, 15))
         
         # Make countdown frame responsive
-        countdown_frame.columnconfigure(0, weight=1)
-        countdown_frame.columnconfigure(1, weight=2)
-        countdown_frame.columnconfigure(2, weight=3)
+        countdown_frame.columnconfigure(0, weight=2)
+        countdown_frame.columnconfigure(1, weight=3)
+        countdown_frame.columnconfigure(2, weight=5)
         
         # Minutes entry with better styling
         minutes_frame = tk.Frame(countdown_frame, bg=COLORS["bg"])
-        minutes_frame.grid(row=0, column=0, sticky="w")
+        minutes_frame.grid(row=1, column=0, sticky="w")
         
         minutes_label = tk.Label(
             minutes_frame, 
             text="Minutes:", 
             bg=COLORS["bg"], 
             fg=COLORS["text"],
-            font=("Segoe UI", 10)
+            font=("Segoe UI", 10, "bold")
         )
         minutes_label.pack(side="left", padx=(0, 5))
         
@@ -1163,18 +1249,96 @@ def create_scheduler_section(parent):
             to=60,
             width=3,
             textvariable=minutes_var,
-            bg=COLORS["highlight"],
+            bg=COLORS.get("input_bg", COLORS["highlight"]),
             fg=COLORS["text"],
-            font=("Segoe UI", 10),
-            buttonbackground=COLORS["highlight"]
+            font=("Segoe UI", 10, "bold"),
+            buttonbackground=COLORS.get("highlight", "#F0F0F0"),
+            relief="solid",
+            bd=1
         )
         minutes_entry.pack(side="left")
         
+        # Visual countdown display with circular progress bar
+        countdown_display_frame = tk.Frame(countdown_frame, bg=COLORS["bg"], padx=10, pady=5)
+        countdown_display_frame.grid(row=1, column=1, sticky="ew")
+        
+        # Create a canvas for the circular progress bar
+        canvas_size = 120
+        canvas = tk.Canvas(
+            countdown_display_frame, 
+            width=canvas_size, 
+            height=canvas_size, 
+            bg=COLORS["bg"], 
+            highlightthickness=0
+        )
+        canvas.pack(side="right")
+        
+        # Draw the progress background (full circle)
+        bar_width = 8
+        outer_radius = (canvas_size // 2) - 5
+        inner_radius = outer_radius - bar_width
+        
+        # Background circle
+        canvas.create_oval(
+            (canvas_size // 2) - outer_radius,
+            (canvas_size // 2) - outer_radius,
+            (canvas_size // 2) + outer_radius,
+            (canvas_size // 2) + outer_radius,
+            outline=COLORS.get("highlight", "#F0F0F0"),
+            width=bar_width,
+            fill=COLORS["bg"]
+        )
+        
+        # Progress arc (initially empty)
+        progress_arc = canvas.create_arc(
+            (canvas_size // 2) - outer_radius,
+            (canvas_size // 2) - outer_radius,
+            (canvas_size // 2) + outer_radius,
+            (canvas_size // 2) + outer_radius,
+            start=90,
+            extent=0,  # Initially 0 degrees
+            outline=COLORS["accent"],
+            width=bar_width,
+            style="arc"
+        )
+        
+        # Create timer display that will be updated during countdown
+        timer_var = tk.StringVar(value="Ready")
+        timer_display = tk.Label(
+            canvas,
+            textvariable=timer_var,
+            bg=COLORS["bg"],
+            fg=COLORS.get("timer_text", COLORS["accent"]),
+            font=("Consolas", 14, "bold")
+        )
+        
+        # Position the timer text in the center of the canvas
+        canvas.create_window(canvas_size // 2, canvas_size // 2, window=timer_display)
+        
+        # Store the canvas and progress arc for later use
+        parent.timer_canvas = canvas
+        parent.progress_arc = progress_arc
+        parent.canvas_size = canvas_size
+        
+        # Store the display variables as attributes for later use
+        parent.timer_var = timer_var
+        parent.timer_display = timer_display
+        
         # Lock type options with improved layout
         lock_type_frame = tk.Frame(countdown_frame, bg=COLORS["bg"])
-        lock_type_frame.grid(row=0, column=1, sticky="w", padx=15)
+        lock_type_frame.grid(row=2, column=0, columnspan=2, sticky="w", pady=15)
         
         lock_type_var = tk.StringVar(value="both")
+        
+        # Add a subtitle for options
+        lock_type_label = tk.Label(
+            lock_type_frame,
+            text="What to lock:",
+            bg=COLORS["bg"],
+            fg=COLORS["text"],
+            font=("Segoe UI", 10, "bold")
+        )
+        lock_type_label.pack(side="left", padx=(0, 15))
         
         # Use custom radio button style
         keyboard_radio = tk.Radiobutton(
@@ -1184,7 +1348,7 @@ def create_scheduler_section(parent):
             value="keyboard",
             bg=COLORS["bg"],
             fg=COLORS["text"],
-            selectcolor=COLORS["highlight"],
+            selectcolor=COLORS.get("highlight", "#F0F0F0"),
             font=("Segoe UI", 10)
         )
         keyboard_radio.pack(side="left", padx=(0, 10))
@@ -1196,7 +1360,7 @@ def create_scheduler_section(parent):
             value="mouse",
             bg=COLORS["bg"],
             fg=COLORS["text"],
-            selectcolor=COLORS["highlight"],
+            selectcolor=COLORS.get("highlight", "#F0F0F0"),
             font=("Segoe UI", 10)
         )
         mouse_radio.pack(side="left", padx=(0, 10))
@@ -1208,28 +1372,85 @@ def create_scheduler_section(parent):
             value="both",
             bg=COLORS["bg"],
             fg=COLORS["text"],
-            selectcolor=COLORS["highlight"],
+            selectcolor=COLORS.get("highlight", "#F0F0F0"),
             font=("Segoe UI", 10)
         )
         both_radio.pack(side="left")
         
-        # Start button with enhanced styling
+        # Duration option for auto-unlock
+        duration_frame = tk.Frame(countdown_frame, bg=COLORS["bg"])
+        duration_frame.grid(row=3, column=0, columnspan=2, sticky="w", pady=(0, 15))
+        
+        # Create an auto-unlock option
+        auto_unlock_var = tk.BooleanVar(value=True)
+        auto_unlock_check = tk.Checkbutton(
+            duration_frame,
+            text="Auto-unlock after",
+            variable=auto_unlock_var,
+            bg=COLORS["bg"],
+            fg=COLORS["text"],
+            selectcolor=COLORS.get("highlight", "#F0F0F0"),
+            font=("Segoe UI", 10, "bold")
+        )
+        auto_unlock_check.pack(side="left", padx=(0, 5))
+        
+        unlock_minutes_var = tk.StringVar(value="5")
+        unlock_minutes_entry = tk.Spinbox(
+            duration_frame,
+            from_=1,
+            to=120,
+            width=3,
+            textvariable=unlock_minutes_var,
+            bg=COLORS.get("input_bg", COLORS["highlight"]),
+            fg=COLORS["text"],
+            font=("Segoe UI", 10),
+            buttonbackground=COLORS.get("highlight", "#F0F0F0"),
+            relief="solid",
+            bd=1
+        )
+        unlock_minutes_entry.pack(side="left", padx=(0, 5))
+        
+        minutes_text = tk.Label(
+            duration_frame,
+            text="minutes",
+            bg=COLORS["bg"],
+            fg=COLORS["text"],
+            font=("Segoe UI", 10)
+        )
+        minutes_text.pack(side="left")
+        
+        # Store the auto unlock variables for later use
+        parent.auto_unlock_var = auto_unlock_var
+        parent.unlock_minutes_var = unlock_minutes_var
+        
+        # Start button with enhanced styling and improved position
+        buttons_container = tk.Frame(countdown_frame, bg=COLORS["bg"])
+        buttons_container.grid(row=4, column=0, columnspan=3, sticky="e")
+        
         start_button = tk.Button(
-            countdown_frame,
+            buttons_container,
             text="Start Countdown",
             bg=COLORS["accent"],
             fg="white",
             relief="flat",
             borderwidth=0,
             padx=15,
-            pady=8,
-            font=("Segoe UI", 10, "bold"),
+            pady=10,
+            font=("Segoe UI", 11, "bold"),
             cursor="hand2",
             activebackground="#0069d9",
             activeforeground="white",
-            command=lambda: start_countdown(minutes_var.get(), lock_type_var.get())
+            command=lambda: start_enhanced_countdown(
+                minutes_var.get(), 
+                lock_type_var.get(),
+                auto_unlock_var.get(),
+                unlock_minutes_var.get(),
+                timer_var,
+                progress_arc,
+                canvas
+            )
         )
-        start_button.grid(row=0, column=2, sticky="e")
+        start_button.pack(side="right")
         
         # Add hover effect
         start_button.bind("<Enter>", lambda e: on_enter(e, start_button, COLORS["accent"], "#0069d9"))
@@ -1242,8 +1463,159 @@ def create_scheduler_section(parent):
             
         parent.after(5000, refresh_schedule_list)
         
+        return schedule_tree
+        
     except Exception as e:
         print(f"Error creating scheduler section: {e}\n{traceback.format_exc()}")
+        return None
+
+
+# Enhanced countdown function with visual feedback
+def start_enhanced_countdown(minutes_str, lock_type, auto_unlock=True, unlock_minutes="5", timer_var=None, progress_arc=None, canvas=None):
+    """
+    Start an enhanced countdown timer
+    
+    Args:
+        minutes_str: String representation of minutes
+        lock_type: Type of lock ('keyboard', 'mouse', or 'both')
+        auto_unlock: Boolean indicating if auto-unlock is enabled
+        unlock_minutes: String representation of unlock duration
+        timer_var: StringVar to update with countdown information
+        progress_arc: ID of the progress arc on canvas
+        canvas: Canvas containing the progress arc
+    """
+    global countdown_active
+    
+    try:
+        # Validate input
+        minutes = int(minutes_str)
+        if minutes <= 0:
+            messagebox.showerror("Error", "Please enter a valid number of minutes")
+            return
+            
+        # Convert to seconds
+        seconds = minutes * 60
+        countdown_seconds = seconds
+        total_seconds = seconds  # Keep track of total seconds for progress calculation
+        
+        # Update timer display
+        if timer_var:
+            timer_var.set(f"Countdown: {minutes:02d}:00")
+            
+        # Reset progress bar
+        if progress_arc and canvas:
+            canvas.itemconfig(progress_arc, extent=0)
+        
+        # Create a countdown schedule
+        schedule_id = scheduler.generate_id()
+        schedule_name = f"Countdown ({minutes} min)"
+        
+        # Set up auto-unlock if enabled
+        duration = None
+        if auto_unlock:
+            try:
+                unlock_minutes_val = int(unlock_minutes)
+                if unlock_minutes_val > 0:
+                    duration = unlock_minutes_val * 60
+            except ValueError:
+                messagebox.showerror("Error", "Please enter a valid unlock duration")
+                return
+        
+        # Create the schedule
+        schedule = scheduler.Schedule(
+            id=schedule_id,
+            name=schedule_name,
+            action=lock_type,
+            time_type="countdown",
+            start_time=seconds,
+            duration=duration,
+            enabled=True
+        )
+        
+        # Add and start the schedule
+        if schedule_manager.add_schedule(schedule):
+            # Show success message
+            device_type = "keyboard and mouse" if lock_type == "both" else lock_type
+            
+            unlock_msg = ""
+            if auto_unlock and duration:
+                unlock_duration = int(unlock_minutes)
+                unlock_msg = f" and will automatically unlock after {unlock_duration} minute{'s' if unlock_duration != 1 else ''}"
+            
+            messagebox.showinfo(
+                "Countdown Started", 
+                f"The {device_type} will be locked in {minutes} minute{'s' if minutes != 1 else ''}{unlock_msg}."
+            )
+            
+            # Set up visual countdown
+            def update_countdown():
+                nonlocal countdown_seconds
+                countdown_seconds -= 1
+                
+                minutes_left = countdown_seconds // 60
+                seconds_left = countdown_seconds % 60
+                
+                # Update circular progress bar
+                if progress_arc and canvas and total_seconds > 0:
+                    progress_percentage = 1 - (countdown_seconds / total_seconds)
+                    # Convert percentage to degrees (360 degrees = full circle)
+                    extent = progress_percentage * -360
+                    canvas.itemconfig(progress_arc, extent=extent)
+                
+                if countdown_seconds >= 0 and timer_var:
+                    timer_var.set(f"Countdown: {minutes_left:02d}:{seconds_left:02d}")
+                    root.after(1000, update_countdown)
+                else:
+                    if timer_var:
+                        if auto_unlock and duration:
+                            # Start the unlock countdown after locking
+                            unlock_seconds = duration
+                            total_unlock_seconds = duration  # For progress calculation
+                            timer_var.set(f"Locked: {unlock_minutes:02d}:00")
+                            
+                            # Reset progress bar for unlock countdown
+                            if progress_arc and canvas:
+                                canvas.itemconfig(progress_arc, extent=0, outline="#28a745")  # Green for unlocking
+                            
+                            def update_unlock_countdown():
+                                nonlocal unlock_seconds
+                                unlock_seconds -= 1
+                                
+                                unlock_mins = unlock_seconds // 60
+                                unlock_secs = unlock_seconds % 60
+                                
+                                # Update circular progress bar for unlock countdown
+                                if progress_arc and canvas and total_unlock_seconds > 0:
+                                    unlock_progress = 1 - (unlock_seconds / total_unlock_seconds)
+                                    unlock_extent = unlock_progress * -360
+                                    canvas.itemconfig(progress_arc, extent=unlock_extent)
+                                
+                                if unlock_seconds >= 0 and timer_var:
+                                    timer_var.set(f"Unlocks in: {unlock_mins:02d}:{unlock_secs:02d}")
+                                    root.after(1000, update_unlock_countdown)
+                                else:
+                                    timer_var.set("Unlocked")
+                                    # Reset progress bar color
+                                    if progress_arc and canvas:
+                                        canvas.itemconfig(progress_arc, extent=0, outline=COLORS["accent"])
+                                    root.after(3000, lambda: timer_var.set("Ready"))
+                            
+                            root.after(1000, update_unlock_countdown)
+                        else:
+                            timer_var.set("Locked")
+                            # Reset progress bar
+                            if progress_arc and canvas:
+                                canvas.itemconfig(progress_arc, extent=0)
+            
+            root.after(1000, update_countdown)
+        else:
+            messagebox.showerror("Error", "Failed to start countdown")
+        
+    except ValueError:
+        messagebox.showerror("Error", "Please enter a valid number of minutes")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to start countdown: {e}")
+        print(f"Error starting countdown: {e}\n{traceback.format_exc()}")
 
 
 def add_schedule_to_tree(tree, schedule):
@@ -1971,46 +2343,6 @@ def delete_selected_schedule(tree):
     except Exception as e:
         messagebox.showerror("Error", f"Failed to delete schedule: {e}")
         print(f"Error deleting schedule: {e}\n{traceback.format_exc()}")
-
-
-def start_countdown(minutes_str, lock_type):
-    """Start a countdown timer"""
-    try:
-        minutes = int(minutes_str)
-        if minutes <= 0:
-            messagebox.showerror("Error", "Please enter a valid number of minutes")
-            return
-        
-        seconds = minutes * 60
-        
-        # Create a countdown schedule
-        schedule_id = scheduler.generate_id()
-        schedule_name = f"Countdown ({minutes} min)"
-        
-        schedule = scheduler.Schedule(
-            id=schedule_id,
-            name=schedule_name,
-            action=lock_type,
-            time_type="countdown",
-            start_time=seconds,
-            duration=None,  # Indefinite until manually unlocked
-            enabled=True
-        )
-        
-        # Add and start the schedule
-        if schedule_manager.add_schedule(schedule):
-            messagebox.showinfo(
-                "Countdown Started", 
-                f"The {lock_type} will be locked in {minutes} minutes"
-            )
-        else:
-            messagebox.showerror("Error", "Failed to start countdown")
-        
-    except ValueError:
-        messagebox.showerror("Error", "Please enter a valid number of minutes")
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to start countdown: {e}")
-        print(f"Error starting countdown: {e}\n{traceback.format_exc()}")
 
 
 def cleanup():
