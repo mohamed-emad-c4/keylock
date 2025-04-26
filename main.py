@@ -465,24 +465,118 @@ def create_ui():
     title_frame.grid(row=0, column=0, pady=(0, 10), sticky="ew")
     title_frame.columnconfigure(0, weight=1)
     
-    # Application icon and title
+    # Draw a custom app icon on canvas
+    icon_size = 32
+    icon_canvas = tk.Canvas(
+        title_frame,
+        width=icon_size,
+        height=icon_size,
+        bg=COLORS["glass_bg"],
+        highlightthickness=0
+    )
+    
+    # Draw a lock icon
+    center_x = icon_size / 2
+    center_y = icon_size / 2
+    
+    # Lock body
+    lock_width = 20
+    lock_height = 16
+    lock_left = center_x - lock_width / 2
+    lock_top = center_y - lock_height / 2 + 4
+    lock_right = center_x + lock_width / 2
+    lock_bottom = lock_top + lock_height
+    
+    # Draw rounded rectangle for lock body
+    draw_rounded_rectangle(
+        icon_canvas,
+        lock_left, lock_top, lock_right, lock_bottom,
+        radius=3,
+        outline=COLORS["text"],
+        width=2,
+        fill=COLORS["accent"]
+    )
+    
+    # Lock shackle
+    shackle_width = 12
+    shackle_height = 10
+    shackle_left = center_x - shackle_width / 2
+    shackle_bottom = lock_top
+    shackle_right = center_x + shackle_width / 2
+    shackle_top = shackle_bottom - shackle_height
+    
+    icon_canvas.create_arc(
+        shackle_left, shackle_top,
+        shackle_right, shackle_bottom + shackle_height/2,
+        start=0, extent=180,
+        outline=COLORS["text"],
+        width=2,
+        style="arc"
+    )
+    
+    icon_canvas.grid(row=0, column=0, sticky="w", padx=5)
+    
+    # Store the canvas as app_icon
+    app_icon = icon_canvas
+    
+    # Application title
     title_label = ttk.Label(
         title_frame, 
         text="KeyLock", 
-        font=("Segoe UI", 16, "bold"),
-        image=app_icon, 
-        compound=tk.LEFT,
         style="Glass.Header.TLabel"
     )
-    title_label.grid(row=0, column=0, sticky="w", padx=5)
+    title_label.grid(row=0, column=1, sticky="w")
     
-    # Buttons frame with responsive layout and glass effect
-    button_frame = ttk.Frame(main_content, style="Glass.TFrame")
-    button_frame.grid(row=1, column=0, pady=10, sticky="ew")
+    # Add a version label and about button
+    version_frame = ttk.Frame(title_frame, style="Glass.TFrame")
+    version_frame.grid(row=0, column=2, sticky="e", padx=10)
+    
+    version_label = ttk.Label(
+        version_frame,
+        text="v1.0",
+        style="Glass.TLabel",
+        font=("Segoe UI", 8)
+    )
+    version_label.pack(side="left", padx=(0, 10))
+    
+    # Button with a question mark icon
+    help_button = ttk.Button(
+        version_frame,
+        text="?",
+        width=2,
+        style="Glass.TButton",
+        command=lambda: tk.messagebox.showinfo(
+            "About KeyLock",
+            "KeyLock is a utility for locking your keyboard and mouse.\n\n"
+            "Press the configured hotkey to unlock devices.\n\n"
+            "© 2023 KeyLock Team"
+        )
+    )
+    help_button.pack(side="right")
+    
+    # Modern card layout for main controls
+    control_card = ttk.Frame(main_content, style="Glass.TFrame", padding=15)
+    control_card.grid(row=1, column=0, pady=10, sticky="ew", padx=20)
+    control_card.columnconfigure(0, weight=1)
+    control_card.columnconfigure(1, weight=1)
+    
+    # Card header
+    card_header = ttk.Label(
+        control_card,
+        text="Quick Controls",
+        style="Glass.Subheader.TLabel",
+        font=("Segoe UI", 14, "bold")
+    )
+    card_header.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
+    
+    # Button frame with hover effects
+    button_frame = ttk.Frame(control_card, style="Glass.TFrame")
+    button_frame.grid(row=1, column=0, columnspan=2, pady=10, sticky="ew")
     button_frame.columnconfigure(0, weight=1)
     button_frame.columnconfigure(1, weight=1)
+    button_frame.columnconfigure(2, weight=1)
     
-    # Keyboard Lock button with glass effect
+    # Lock Keyboard button
     key_lock_btn = ttk.Button(
         button_frame,
         text="Lock Keyboard",
@@ -492,7 +586,7 @@ def create_ui():
     )
     key_lock_btn.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
     
-    # Mouse Lock button with glass effect
+    # Lock Mouse button
     mouse_lock_btn = ttk.Button(
         button_frame,
         text="Lock Mouse",
@@ -502,60 +596,137 @@ def create_ui():
     )
     mouse_lock_btn.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
     
-    # Options frame with glass effect
-    options_frame = ttk.LabelFrame(main_content, text="Options", padding=10, style="Glass.TFrame")
-    options_frame.grid(row=2, column=0, pady=10, sticky="ew")
-    options_frame.columnconfigure(0, weight=1)
+    # Lock Both button
+    both_lock_btn = ttk.Button(
+        button_frame,
+        text="Lock Both",
+        command=safe_lock_both,
+        style="Glass.TButton",
+        width=15
+    )
+    both_lock_btn.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
     
-    # Create status section with glass effect
+    # Add tooltips for buttons
+    tooltip_timer = None
+    tooltip_label = None
+    
+    def show_tooltip(widget, text, event=None):
+        nonlocal tooltip_timer, tooltip_label
+        x, y, _, _ = widget.bbox("insert")
+        x += widget.winfo_rootx() + 25
+        y += widget.winfo_rooty() + 25
+        
+        # Create tooltip
+        tooltip_label = tk.Toplevel(widget)
+        tooltip_label.wm_overrideredirect(True)
+        tooltip_label.wm_geometry(f"+{x}+{y}")
+        
+        frame = ttk.Frame(tooltip_label, style="Glass.TFrame", padding=5)
+        frame.pack(fill="both", expand=True)
+        
+        label = ttk.Label(frame, text=text, style="Glass.TLabel", 
+                         justify=tk.LEFT, wraplength=200)
+        label.pack()
+    
+    def hide_tooltip(event=None):
+        nonlocal tooltip_timer, tooltip_label
+        if tooltip_timer is not None:
+            root.after_cancel(tooltip_timer)
+            tooltip_timer = None
+        if tooltip_label:
+            tooltip_label.destroy()
+            tooltip_label = None
+    
+    def schedule_tooltip(widget, text, event=None):
+        nonlocal tooltip_timer
+        if tooltip_timer is not None:
+            root.after_cancel(tooltip_timer)
+        tooltip_timer = root.after(500, lambda: show_tooltip(widget, text))
+    
+    # Add tooltips to buttons
+    key_lock_btn.bind("<Enter>", lambda e: schedule_tooltip(key_lock_btn, "Locks only the keyboard, mouse will remain functional"))
+    key_lock_btn.bind("<Leave>", hide_tooltip)
+    
+    mouse_lock_btn.bind("<Enter>", lambda e: schedule_tooltip(mouse_lock_btn, "Locks only the mouse, keyboard will remain functional"))
+    mouse_lock_btn.bind("<Leave>", hide_tooltip)
+    
+    both_lock_btn.bind("<Enter>", lambda e: schedule_tooltip(both_lock_btn, "Locks both keyboard and mouse simultaneously"))
+    both_lock_btn.bind("<Leave>", hide_tooltip)
+    
+    # Create status section
     status_frame = create_status_section(main_content)
     
-    # Create buttons section with glass effect
-    create_buttons_section(main_content)
+    # Create options section with card-like appearance
+    options_card = ttk.LabelFrame(main_content, text="Options", padding=15, style="Glass.TFrame")
+    options_card.grid(row=3, column=0, sticky="ew", padx=20)
+    options_card.columnconfigure(0, weight=1)
     
-    # Create settings section with glass effect
-    create_settings_section(main_content)
+    # Add the lock on minimize option
+    min_frame = ttk.Frame(options_card, style="Glass.TFrame")
+    min_frame.grid(row=0, column=0, sticky="w", pady=5)
     
-    # Create scheduler UI on scheduler tab with scrollability
-    scheduler_frame = ttk.Frame(main_frame, style="TFrame")
+    key_block_on_min = tk.BooleanVar(value=config.get("lock_on_minimize", False))
+    lock_on_min_check = ttk.Checkbutton(
+        min_frame,
+        text="Lock keyboard when minimized",
+        variable=key_block_on_min,
+        style="Glass.TCheckbutton"
+    )
+    lock_on_min_check.pack(side="left")
+    lock_on_min_check.bind("<Enter>", lambda e: schedule_tooltip(lock_on_min_check, "Automatically locks the keyboard when the application window is minimized"))
+    lock_on_min_check.bind("<Leave>", hide_tooltip)
     
-    # Create a canvas and scrollbar for scheduler tab scrollability
-    scheduler_canvas = tk.Canvas(scheduler_frame, bg=COLORS["bg"], highlightthickness=0)
-    scheduler_scrollbar = ttk.Scrollbar(scheduler_frame, orient="vertical", command=scheduler_canvas.yview, style="Vertical.TScrollbar")
+    # Add transparency slider with a more modern appearance
+    transparency_frame = ttk.Frame(options_card, style="Glass.TFrame")
+    transparency_frame.grid(row=1, column=0, sticky="ew", pady=10)
+    transparency_frame.columnconfigure(1, weight=1)
     
-    # Create frame inside canvas for scheduler content
-    scheduler_content = ttk.Frame(scheduler_canvas, style="TFrame")
+    transparency_label = ttk.Label(
+        transparency_frame,
+        text="Window Transparency:",
+        style="Glass.TLabel"
+    )
+    transparency_label.grid(row=0, column=0, sticky="w", padx=(0, 10))
     
-    # Configure scrolling
-    scheduler_canvas.configure(yscrollcommand=scheduler_scrollbar.set)
-    scheduler_canvas.pack(side="left", fill="both", expand=True)
-    scheduler_scrollbar.pack(side="right", fill="y")
+    window_transparency_var = tk.IntVar(value=config.get("transparency", 255))
+    transparency_slider = ttk.Scale(
+        transparency_frame,
+        from_=100,
+        to=255,
+        orient="horizontal",
+        variable=window_transparency_var,
+        command=lambda v: apply_transparency(int(float(v)))
+    )
+    transparency_slider.grid(row=0, column=1, sticky="ew")
+    transparency_slider.bind("<Enter>", lambda e: schedule_tooltip(transparency_slider, "Adjust the transparency of the application window"))
+    transparency_slider.bind("<Leave>", hide_tooltip)
     
-    # Create window in canvas for scheduler content
-    scheduler_canvas_window = scheduler_canvas.create_window((0, 0), window=scheduler_content, anchor="nw", tags="scheduler_content")
+    # Add shortcut configuration
+    shortcut_frame = ttk.Frame(options_card, style="Glass.TFrame")
+    shortcut_frame.grid(row=2, column=0, sticky="ew", pady=5)
+    shortcut_frame.columnconfigure(1, weight=1)
     
-    # Configure canvas scrolling
-    def on_scheduler_canvas_configure(event):
-        scheduler_canvas.configure(scrollregion=scheduler_canvas.bbox("all"))
-        width = event.width
-        scheduler_canvas.itemconfig(scheduler_canvas_window, width=width)
+    shortcut_label = ttk.Label(
+        shortcut_frame,
+        text="Unlock Shortcut:",
+        style="Glass.TLabel"
+    )
+    shortcut_label.grid(row=0, column=0, sticky="w", padx=(0, 10))
     
-    scheduler_canvas.bind("<Configure>", on_scheduler_canvas_configure)
+    shortcut = tk.StringVar(value=config.get("shortcut", "Ctrl+Alt+U"))
+    shortcut_entry = ttk.Entry(
+        shortcut_frame,
+        textvariable=shortcut,
+        style="Glass.TEntry",
+        width=15
+    )
+    shortcut_entry.grid(row=0, column=1, sticky="w")
+    shortcut_entry.bind("<KeyRelease>", lambda e: debounce_shortcut_change())
+    shortcut_entry.bind("<Enter>", lambda e: schedule_tooltip(shortcut_entry, "Enter a keyboard shortcut to use for unlocking (e.g., Ctrl+Alt+U)"))
+    shortcut_entry.bind("<Leave>", hide_tooltip)
     
-    # Add mouse wheel scrolling for scheduler tab
-    def on_scheduler_mousewheel(event):
-        scheduler_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-    
-    scheduler_canvas.bind_all("<MouseWheel>", on_scheduler_mousewheel)
-    
-    # Configure scheduler_content for responsiveness
-    scheduler_content.columnconfigure(0, weight=1)
-    
-    # Add the scheduler tab to notebook
-    main_frame.add(scheduler_frame, text="Scheduler")
-    
-    # Populate the scheduler tab with glass effect
-    create_scheduler_section(scheduler_content)
+    # Create scheduler section
+    create_scheduler_section_enhanced(main_content)
     
     # Create footer with glass effect
     footer = ttk.Label(
@@ -564,7 +735,7 @@ def create_ui():
         style="Glass.TLabel",
         padding=10
     )
-    footer.grid(row=3, column=0, sticky="ew", pady=(0, 10))
+    footer.grid(row=5, column=0, sticky="ew", pady=(0, 10))
     
     # Apply initial config settings
     apply_config_settings()
@@ -578,7 +749,225 @@ def create_ui():
     # Center window on screen
     center_window(root, 800, 650)
     
+    # Apply initial transparency
+    apply_transparency(window_transparency_var.get())
+    
     return True
+
+
+def create_scheduler_section_enhanced(parent):
+    """Create an enhanced scheduler UI section with glass effect"""
+    try:
+        # Create a card-like container for scheduler
+        scheduler_card = ttk.Frame(parent, style="Glass.TFrame")
+        scheduler_card.grid(row=4, column=0, sticky="ew", padx=20, pady=10)
+        scheduler_card.columnconfigure(0, weight=1)
+        
+        # Header with improved visual hierarchy and glass effect
+        scheduler_header = ttk.Label(
+            scheduler_card, 
+            text="Quick Scheduler", 
+            style="Glass.Header.TLabel"
+        )
+        scheduler_header.grid(row=0, column=0, sticky="w", pady=(10, 5))
+        
+        # Add a descriptive subheader with glass effect
+        scheduler_subheader = ttk.Label(
+            scheduler_card,
+            text="Set up a quick countdown timer or create a schedule", 
+            style="Glass.TLabel"
+        )
+        scheduler_subheader.grid(row=1, column=0, sticky="w", pady=(0, 15))
+        
+        # Timer controls in a row
+        timer_frame = ttk.Frame(scheduler_card, style="Glass.TFrame")
+        timer_frame.grid(row=2, column=0, sticky="ew", pady=5)
+        timer_frame.columnconfigure(0, weight=1)
+        timer_frame.columnconfigure(1, weight=1)
+        timer_frame.columnconfigure(2, weight=1)
+        timer_frame.columnconfigure(3, weight=1)
+        
+        # Minutes entry with glass styling
+        minutes_frame = ttk.Frame(timer_frame, style="Glass.TFrame")
+        minutes_frame.grid(row=0, column=0, sticky="w", padx=5)
+        
+        minutes_label = ttk.Label(
+            minutes_frame, 
+            text="Minutes:", 
+            style="Glass.TLabel"
+        )
+        minutes_label.pack(side="left", padx=(0, 5))
+        
+        minutes_var = tk.StringVar(value="5")
+        minutes_entry = tk.Spinbox(
+            minutes_frame,
+            from_=1,
+            to=60,
+            width=3,
+            textvariable=minutes_var,
+            bg=COLORS["glass_highlight"],
+            fg=COLORS["text"],
+            font=("Segoe UI", 10, "bold"),
+            buttonbackground=COLORS["glass_highlight"],
+            relief="flat",
+            bd=0
+        )
+        minutes_entry.pack(side="left")
+        
+        # Lock type selection with radio buttons
+        lock_type_frame = ttk.Frame(timer_frame, style="Glass.TFrame")
+        lock_type_frame.grid(row=0, column=1, sticky="w", padx=5)
+        
+        lock_type_var = tk.StringVar(value="both")
+        
+        keyboard_radio = ttk.Radiobutton(
+            lock_type_frame,
+            text="Keyboard",
+            variable=lock_type_var,
+            value="keyboard",
+            style="Glass.TRadiobutton"
+        )
+        keyboard_radio.pack(side="left", padx=(0, 10))
+        
+        mouse_radio = ttk.Radiobutton(
+            lock_type_frame,
+            text="Mouse",
+            variable=lock_type_var,
+            value="mouse",
+            style="Glass.TRadiobutton"
+        )
+        mouse_radio.pack(side="left", padx=(0, 10))
+        
+        both_radio = ttk.Radiobutton(
+            lock_type_frame,
+            text="Both",
+            variable=lock_type_var,
+            value="both",
+            style="Glass.TRadiobutton"
+        )
+        both_radio.pack(side="left")
+        
+        # Auto-unlock option
+        unlock_frame = ttk.Frame(timer_frame, style="Glass.TFrame")
+        unlock_frame.grid(row=0, column=2, sticky="w", padx=5)
+        
+        auto_unlock_var = tk.BooleanVar(value=True)
+        auto_unlock_check = ttk.Checkbutton(
+            unlock_frame,
+            text="Auto-unlock after",
+            variable=auto_unlock_var,
+            style="Glass.TCheckbutton"
+        )
+        auto_unlock_check.pack(side="left", padx=(0, 5))
+        
+        unlock_minutes_var = tk.StringVar(value="5")
+        unlock_minutes_entry = tk.Spinbox(
+            unlock_frame,
+            from_=1,
+            to=120,
+            width=3,
+            textvariable=unlock_minutes_var,
+            bg=COLORS["glass_highlight"],
+            fg=COLORS["text"],
+            font=("Segoe UI", 10),
+            buttonbackground=COLORS["glass_highlight"],
+            relief="flat",
+            bd=0
+        )
+        unlock_minutes_entry.pack(side="left", padx=(0, 5))
+        
+        minutes_text = ttk.Label(
+            unlock_frame,
+            text="minutes",
+            style="Glass.TLabel"
+        )
+        minutes_text.pack(side="left")
+        
+        # Start button with glass effect
+        start_button = ttk.Button(
+            timer_frame,
+            text="Start Timer",
+            style="Glass.TButton",
+            command=lambda: start_enhanced_countdown(
+                minutes_var.get(), 
+                lock_type_var.get(),
+                auto_unlock_var.get(),
+                unlock_minutes_var.get(),
+                timer_var,
+                progress_arc,
+                canvas
+            )
+        )
+        start_button.grid(row=0, column=3, sticky="e", padx=5)
+        
+        # Visual progress indicator
+        progress_frame = ttk.Frame(scheduler_card, style="Glass.TFrame")
+        progress_frame.grid(row=3, column=0, sticky="ew", pady=10)
+        progress_frame.columnconfigure(0, weight=1)
+        
+        # Create canvas for circular progress
+        canvas_size = 80
+        canvas = tk.Canvas(
+            progress_frame,
+            width=canvas_size,
+            height=canvas_size,
+            bg=COLORS["glass_bg"],
+            highlightthickness=0
+        )
+        canvas.grid(row=0, column=0)
+        
+        # Create background circle
+        center_x = canvas_size // 2
+        center_y = canvas_size // 2
+        radius = (canvas_size // 2) - 10
+        
+        # Background circle
+        canvas.create_oval(
+            center_x - radius, center_y - radius,
+            center_x + radius, center_y + radius,
+            outline=COLORS["glass_highlight"],
+            width=8,
+            fill=COLORS["glass_bg"]
+        )
+        
+        # Progress arc (initially empty)
+        progress_arc = canvas.create_arc(
+            center_x - radius, center_y - radius,
+            center_x + radius, center_y + radius,
+            start=90, extent=0,
+            outline=COLORS["accent"],
+            width=8,
+            style="arc"
+        )
+        
+        # Add timer text
+        timer_var = tk.StringVar(value="Ready")
+        timer_text = ttk.Label(
+            canvas,
+            textvariable=timer_var,
+            style="Glass.Timer.TLabel",
+            font=("Consolas", 14, "bold")
+        )
+        canvas.create_window(center_x, center_y, window=timer_text)
+        
+        # Store references for later use
+        parent.timer_var = timer_var
+        parent.progress_arc = progress_arc
+        parent.timer_canvas = canvas
+        
+        # Add a "Go to Full Scheduler" button
+        full_scheduler_btn = ttk.Button(
+            scheduler_card,
+            text="Go to Full Scheduler",
+            style="Glass.TButton",
+            command=lambda: main_frame.select(1)  # Switch to scheduler tab
+        )
+        full_scheduler_btn.grid(row=4, column=0, sticky="e", pady=10)
+        
+        return scheduler_card
+    except Exception as e:
+        print(f"Error creating enhanced scheduler section: {e}")
+        return None
 
 
 def on_window_resize(event):
@@ -731,8 +1120,8 @@ def create_header_section(parent):
 
 
 def create_status_section(parent):
-    """Create the status section of the UI with glass effect"""
-    global keyboard_img, mouse_img, keyboard_img_label, mouse_img_label, keyboard_status, mouse_status
+    """Create the status section of the UI with glass effect and canvas-drawn indicators"""
+    global keyboard_status, mouse_status
     
     try:
         # Status frames with glass effect
@@ -758,20 +1147,7 @@ def create_status_section(parent):
         )
         mouse_status_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
         
-        try:
-            keyboard_locked_image = tk.PhotoImage(file=load_asset("keyboard_locked.png"))
-            keyboard_unlocked_image = tk.PhotoImage(file=load_asset("keyboard_unlocked.png"))
-            mouse_locked_image = tk.PhotoImage(file=load_asset("mouse_locked.png"))
-            mouse_unlocked_image = tk.PhotoImage(file=load_asset("mouse_unlocked.png"))
-        except Exception as e:
-            print(f"Error loading status images: {e}")
-            # Create empty images as fallback
-            keyboard_locked_image = tk.PhotoImage(width=32, height=32)
-            keyboard_unlocked_image = tk.PhotoImage(width=32, height=32)
-            mouse_locked_image = tk.PhotoImage(width=32, height=32)
-            mouse_unlocked_image = tk.PhotoImage(width=32, height=32)
-        
-        # Keyboard status with glass effect
+        # Keyboard status with glass effect and canvas indicator
         keyboard_label = ttk.Label(
             keyboard_status_frame, 
             text="Keyboard", 
@@ -779,9 +1155,18 @@ def create_status_section(parent):
         )
         keyboard_label.pack(pady=(0, 5))
         
-        keyboard_img = keyboard_unlocked_image
-        keyboard_img_label = ttk.Label(keyboard_status_frame, image=keyboard_img, style="Glass.TLabel")
-        keyboard_img_label.pack(pady=5)
+        # Create canvas for keyboard indicator
+        keyboard_canvas = tk.Canvas(
+            keyboard_status_frame,
+            width=60,
+            height=60,
+            bg=COLORS["glass_bg"],
+            highlightthickness=0
+        )
+        keyboard_canvas.pack(pady=5)
+        
+        # Draw keyboard indicator (initially unlocked)
+        draw_keyboard_indicator(keyboard_canvas, False)
         
         keyboard_status = ttk.Label(
             keyboard_status_frame, 
@@ -792,7 +1177,7 @@ def create_status_section(parent):
         )
         keyboard_status.pack(pady=(5, 0))
         
-        # Mouse status with glass effect
+        # Mouse status with glass effect and canvas indicator
         mouse_label = ttk.Label(
             mouse_status_frame, 
             text="Mouse", 
@@ -800,9 +1185,18 @@ def create_status_section(parent):
         )
         mouse_label.pack(pady=(0, 5))
         
-        mouse_img = mouse_unlocked_image
-        mouse_img_label = ttk.Label(mouse_status_frame, image=mouse_img, style="Glass.TLabel")
-        mouse_img_label.pack(pady=5)
+        # Create canvas for mouse indicator
+        mouse_canvas = tk.Canvas(
+            mouse_status_frame,
+            width=60,
+            height=60,
+            bg=COLORS["glass_bg"],
+            highlightthickness=0
+        )
+        mouse_canvas.pack(pady=5)
+        
+        # Draw mouse indicator (initially unlocked)
+        draw_mouse_indicator(mouse_canvas, False)
         
         mouse_status = ttk.Label(
             mouse_status_frame, 
@@ -813,10 +1207,296 @@ def create_status_section(parent):
         )
         mouse_status.pack(pady=(5, 0))
         
+        # Store canvas references for later updates
+        parent.keyboard_canvas = keyboard_canvas
+        parent.mouse_canvas = mouse_canvas
+        
         return status_frame
     except Exception as e:
         print(f"Error creating status section: {e}")
         return None
+
+
+def draw_rounded_rectangle(canvas, x1, y1, x2, y2, radius=10, **kwargs):
+    """Draw a rounded rectangle on the canvas"""
+    # Draw corner arcs
+    canvas.create_arc(x1, y1, x1 + 2*radius, y1 + 2*radius, 
+                      start=90, extent=90, style="pieslice", **kwargs)
+    canvas.create_arc(x2 - 2*radius, y1, x2, y1 + 2*radius, 
+                      start=0, extent=90, style="pieslice", **kwargs)
+    canvas.create_arc(x1, y2 - 2*radius, x1 + 2*radius, y2, 
+                      start=180, extent=90, style="pieslice", **kwargs)
+    canvas.create_arc(x2 - 2*radius, y2 - 2*radius, x2, y2, 
+                      start=270, extent=90, style="pieslice", **kwargs)
+    
+    # Draw connecting rectangles
+    canvas.create_rectangle(x1 + radius, y1, x2 - radius, y2, **kwargs)
+    canvas.create_rectangle(x1, y1 + radius, x1 + radius, y2 - radius, **kwargs)
+    canvas.create_rectangle(x2 - radius, y1 + radius, x2, y2 - radius, **kwargs)
+
+
+def draw_keyboard_indicator(canvas, locked=False):
+    """Draw a keyboard indicator on the canvas"""
+    canvas.delete("all")  # Clear previous drawings
+    
+    # Draw keyboard outline
+    width, height = 60, 60
+    canvas_width, canvas_height = canvas.winfo_width() or width, canvas.winfo_height() or height
+    
+    # Adjust coordinates to center the drawing
+    center_x = canvas_width / 2
+    center_y = canvas_height / 2
+    
+    # Scale factors
+    scale_x = canvas_width / width
+    scale_y = canvas_height / height
+    scale = min(scale_x, scale_y)
+    
+    # Keyboard dimensions
+    kb_width = 40 * scale
+    kb_height = 25 * scale
+    
+    # Calculate position
+    left = center_x - kb_width / 2
+    top = center_y - kb_height / 2
+    right = center_x + kb_width / 2
+    bottom = center_y + kb_height / 2
+    
+    # Draw keyboard base
+    canvas.create_rectangle(
+        left, top, right, bottom,
+        outline=COLORS["text"],
+        width=2,
+        fill=COLORS["glass_highlight"] if not locked else COLORS["accent"]
+    )
+    
+    # Draw keys
+    key_size = 5 * scale
+    key_spacing = 1 * scale
+    key_rows = 3
+    keys_per_row = 5
+    
+    for row in range(key_rows):
+        for col in range(keys_per_row):
+            key_left = left + 3*scale + col * (key_size + key_spacing)
+            key_top = top + 3*scale + row * (key_size + key_spacing)
+            key_right = key_left + key_size
+            key_bottom = key_top + key_size
+            
+            canvas.create_rectangle(
+                key_left, key_top, key_right, key_bottom,
+                outline=COLORS["text"] if not locked else "white",
+                width=1,
+                fill=COLORS["glass_frame"] if not locked else COLORS["accent_hover"]
+            )
+    
+    # Draw lock icon if locked
+    if locked:
+        # Draw lock body
+        lock_width = 16 * scale
+        lock_height = 12 * scale
+        lock_left = center_x - lock_width / 2
+        lock_top = bottom + 5 * scale
+        lock_right = center_x + lock_width / 2
+        lock_bottom = lock_top + lock_height
+        
+        # Draw rounded rectangle for lock body
+        lock_radius = 3 * scale
+        draw_rounded_rectangle(
+            canvas,
+            lock_left, lock_top, lock_right, lock_bottom,
+            radius=lock_radius,
+            outline="white",
+            width=2,
+            fill=COLORS["error"]
+        )
+        
+        # Draw lock shackle
+        shackle_width = 10 * scale
+        shackle_height = 8 * scale
+        shackle_left = center_x - shackle_width / 2
+        shackle_bottom = lock_top
+        shackle_right = center_x + shackle_width / 2
+        shackle_top = shackle_bottom - shackle_height
+        
+        canvas.create_arc(
+            shackle_left, shackle_top,
+            shackle_right, shackle_bottom + shackle_height/2,
+            start=0, extent=180,
+            outline="white",
+            width=2,
+            style="arc"
+        )
+    else:
+        # Draw unlocked text
+        canvas.create_text(
+            center_x,
+            bottom + 10 * scale,
+            text="✓",
+            fill=COLORS["success"],
+            font=("Segoe UI", int(14 * scale), "bold")
+        )
+
+
+def draw_mouse_indicator(canvas, locked=False):
+    """Draw a mouse indicator on the canvas"""
+    canvas.delete("all")  # Clear previous drawings
+    
+    # Draw mouse outline
+    width, height = 60, 60
+    canvas_width, canvas_height = canvas.winfo_width() or width, canvas.winfo_height() or height
+    
+    # Adjust coordinates to center the drawing
+    center_x = canvas_width / 2
+    center_y = canvas_height / 2
+    
+    # Scale factors
+    scale_x = canvas_width / width
+    scale_y = canvas_height / height
+    scale = min(scale_x, scale_y)
+    
+    # Mouse body dimensions
+    mouse_width = 24 * scale
+    mouse_height = 40 * scale
+    
+    # Calculate position
+    left = center_x - mouse_width / 2
+    top = center_y - mouse_height / 2
+    right = center_x + mouse_width / 2
+    bottom = center_y + mouse_height / 2
+    
+    # Draw mouse body
+    canvas.create_oval(
+        left, top, right, bottom,
+        outline=COLORS["text"],
+        width=2,
+        fill=COLORS["glass_highlight"] if not locked else COLORS["accent"]
+    )
+    
+    # Draw mouse buttons
+    button_width = mouse_width
+    button_height = mouse_height / 3
+    
+    # Draw dividing line between buttons
+    canvas.create_line(
+        center_x, top, center_x, top + button_height,
+        fill=COLORS["text"] if not locked else "white",
+        width=1
+    )
+    
+    # Draw scroll wheel
+    wheel_width = 6 * scale
+    wheel_height = 8 * scale
+    wheel_left = center_x - wheel_width / 2
+    wheel_top = top + button_height / 2 - wheel_height / 2
+    wheel_right = center_x + wheel_width / 2
+    wheel_bottom = top + button_height / 2 + wheel_height / 2
+    
+    canvas.create_rectangle(
+        wheel_left, wheel_top, wheel_right, wheel_bottom,
+        outline=COLORS["text"] if not locked else "white",
+        width=1,
+        fill=COLORS["glass_frame"] if not locked else COLORS["accent_hover"]
+    )
+    
+    # Draw mouse cord
+    cord_start_x = center_x
+    cord_start_y = top
+    cord_end_x = center_x
+    cord_end_y = top - 10 * scale
+    
+    canvas.create_line(
+        cord_start_x, cord_start_y, cord_end_x, cord_end_y,
+        fill=COLORS["text"],
+        width=2
+    )
+    
+    # Draw lock icon if locked
+    if locked:
+        # Draw lock body
+        lock_width = 16 * scale
+        lock_height = 12 * scale
+        lock_left = center_x - lock_width / 2
+        lock_top = bottom + 5 * scale
+        lock_right = center_x + lock_width / 2
+        lock_bottom = lock_top + lock_height
+        
+        # Draw rounded rectangle for lock body
+        lock_radius = 3 * scale
+        draw_rounded_rectangle(
+            canvas,
+            lock_left, lock_top, lock_right, lock_bottom,
+            radius=lock_radius,
+            outline="white",
+            width=2,
+            fill=COLORS["error"]
+        )
+        
+        # Draw lock shackle
+        shackle_width = 10 * scale
+        shackle_height = 8 * scale
+        shackle_left = center_x - shackle_width / 2
+        shackle_bottom = lock_top
+        shackle_right = center_x + shackle_width / 2
+        shackle_top = shackle_bottom - shackle_height
+        
+        canvas.create_arc(
+            shackle_left, shackle_top,
+            shackle_right, shackle_bottom + shackle_height/2,
+            start=0, extent=180,
+            outline="white",
+            width=2,
+            style="arc"
+        )
+    else:
+        # Draw unlocked text
+        canvas.create_text(
+            center_x,
+            bottom + 10 * scale,
+            text="✓",
+            fill=COLORS["success"],
+            font=("Segoe UI", int(14 * scale), "bold")
+        )
+
+
+def update_keyboard():
+    """Update the keyboard status indicators"""
+    try:
+        global keyboard_status, keyboard_img_label
+        if keyboard_manager.is_locked():
+            keyboard_status.config(text="Locked")
+            
+            # Update canvas indicator if it exists
+            if hasattr(root, 'keyboard_canvas'):
+                draw_keyboard_indicator(root.keyboard_canvas, True)
+        else:
+            keyboard_status.config(text="Unlocked")
+            
+            # Update canvas indicator if it exists
+            if hasattr(root, 'keyboard_canvas'):
+                draw_keyboard_indicator(root.keyboard_canvas, False)
+    except Exception as e:
+        print(f"Error updating keyboard status: {e}")
+
+
+def update_mouse():
+    """Update the mouse status indicators"""
+    try:
+        global mouse_status, mouse_img_label
+        if mouse_manager.is_locked():
+            mouse_status.config(text="Locked")
+            
+            # Update canvas indicator if it exists
+            if hasattr(root, 'mouse_canvas'):
+                draw_mouse_indicator(root.mouse_canvas, True)
+        else:
+            mouse_status.config(text="Unlocked")
+            
+            # Update canvas indicator if it exists
+            if hasattr(root, 'mouse_canvas'):
+                draw_mouse_indicator(root.mouse_canvas, False)
+    except Exception as e:
+        print(f"Error updating mouse status: {e}")
 
 
 def create_buttons_section(parent):
@@ -1061,38 +1741,6 @@ def safe_exit():
     except Exception as e:
         print(f"Error during exit: {e}")
         os._exit(0)  # Force exit if sys.exit() fails
-
-
-def update_keyboard():
-    """Update keyboard lock status display"""
-    try:
-        global keyboard_img
-        if core.keyboard_locked:
-            keyboard_img = tk.PhotoImage(file=load_asset("keyboard_locked.png"))
-            keyboard_img_label.configure(image=keyboard_img)
-            keyboard_status.configure(text="Locked", fg="white", bg="#dc3545")
-        else:
-            keyboard_img = tk.PhotoImage(file=load_asset("keyboard_unlocked.png"))
-            keyboard_img_label.configure(image=keyboard_img)
-            keyboard_status.configure(text="Unlocked", fg=COLORS["secondary"], bg=COLORS["highlight"])
-    except Exception as e:
-        print(f"Error updating keyboard status: {e}")
-
-
-def update_mouse():
-    """Update mouse lock status display"""
-    try:
-        global mouse_img
-        if core.mouse_locked:
-            mouse_img = tk.PhotoImage(file=load_asset("mouse_locked.png"))
-            mouse_img_label.configure(image=mouse_img)
-            mouse_status.configure(text="Locked", fg="white", bg="#dc3545")
-        else:
-            mouse_img = tk.PhotoImage(file=load_asset("mouse_unlocked.png"))
-            mouse_img_label.configure(image=mouse_img)
-            mouse_status.configure(text="Unlocked", fg=COLORS["secondary"], bg=COLORS["highlight"])
-    except Exception as e:
-        print(f"Error updating mouse status: {e}")
 
 
 def debounce_shortcut_change():
@@ -2524,6 +3172,21 @@ def main():
         except:
             pass
         return 1
+
+
+def apply_transparency(transparency_value):
+    """Apply transparency to the main window"""
+    try:
+        # Clamp the value to valid range
+        transparency = max(100, min(255, transparency_value))
+        
+        # Convert to a float between 0.0 and 1.0 for wm_attributes
+        alpha = transparency / 255.0
+        
+        # Apply the transparency
+        root.wm_attributes("-alpha", alpha)
+    except Exception as e:
+        print(f"Error applying transparency: {e}")
 
 
 if __name__ == "__main__":
