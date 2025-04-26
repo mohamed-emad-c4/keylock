@@ -110,8 +110,302 @@ def load_asset(path):
         return path
 
 
+def initialize_colors():
+    """Initialize the COLORS dictionary with all necessary UI colors"""
+    global COLORS
+    
+    # Make sure our COLORS dictionary has all the necessary colors
+    # with appropriate defaults if they're not defined
+    
+    # Core colors - should be already defined
+    if "bg" not in COLORS:
+        COLORS["bg"] = "#F5F5F5"  # Default background
+        
+    if "text" not in COLORS:
+        COLORS["text"] = "#333333"  # Default text color
+        
+    if "accent" not in COLORS:
+        COLORS["accent"] = "#007BFF"  # Default accent color (Blue)
+        
+    if "highlight" not in COLORS:
+        COLORS["highlight"] = "#F0F0F0"  # Default highlight color
+    
+    # Additional colors for enhanced UI
+    COLORS.setdefault("light_text", "#777777")  # For secondary text
+    COLORS.setdefault("border", "#CCCCCC")      # For borders
+    COLORS.setdefault("input_bg", COLORS["highlight"])  # Input background
+    COLORS.setdefault("accent_hover", "#0069d9")  # Darker accent for hover
+    COLORS.setdefault("timer_text", COLORS["accent"])  # For timer text
+    COLORS.setdefault("success", "#28a745")     # Green for success messages
+    COLORS.setdefault("error", "#dc3545")       # Red for errors
+    COLORS.setdefault("warning", "#ffc107")     # Yellow for warnings
+    
+    # Glass effect colors (using solid colors that mimic glass)
+    if current_theme == "dark":
+        COLORS.setdefault("glass_bg", "#3A3A3A")       # Dark glass-like background
+        COLORS.setdefault("glass_frame", "#333333")    # Darker frame
+        COLORS.setdefault("glass_highlight", "#444444") # Slightly lighter for highlights
+    else:
+        COLORS.setdefault("glass_bg", "#E8E8E8")       # Light glass-like background
+        COLORS.setdefault("glass_frame", "#D0D0D0")    # Slightly darker frame
+        COLORS.setdefault("glass_highlight", "#F0F0F0") # Slightly lighter for highlights
+    
+    # Apply Sun Valley theme colors if available
+    try:
+        if sv_ttk:
+            if current_theme == "dark":
+                COLORS["glass_bg"] = "#2C2C2C"
+                COLORS["glass_frame"] = "#252525"
+                COLORS["glass_highlight"] = "#353535"
+            else:
+                COLORS["glass_bg"] = "#E8ECF0"
+                COLORS["glass_frame"] = "#DBE0E6"
+                COLORS["glass_highlight"] = "#F0F4F8"
+    except:
+        pass
+    
+    return COLORS
+
+
+def configure_styles():
+    """Configure the styles for the application with a modern glass-like appearance"""
+    try:
+        style = ttk.Style()
+        
+        # Apply Sun Valley theme if available
+        try:
+            if sv_ttk:
+                sv_ttk.set_theme("light" if current_theme == "light" else "dark")
+        except:
+            style.theme_use('clam')  # Fallback to clam theme
+        
+        # Ensure we have all necessary colors in the COLORS dictionary
+        initialize_colors()
+        
+        # Configure styles for various UI elements with glass-like appearance
+        style.configure(
+            "Glass.TFrame", 
+            background=COLORS["glass_bg"]
+        )
+        
+        style.configure(
+            "TLabel", 
+            background=COLORS["bg"], 
+            foreground=COLORS["text"],
+            font=("Segoe UI", 10)
+        )
+        
+        style.configure(
+            "Glass.TLabel",
+            background=COLORS["glass_bg"], 
+            foreground=COLORS["text"],
+            font=("Segoe UI", 10)
+        )
+        
+        style.configure(
+            "Header.TLabel",
+            font=("Segoe UI", 16, "bold"),
+            foreground=COLORS["text"],
+            background=COLORS["bg"]
+        )
+        
+        style.configure(
+            "Glass.Header.TLabel",
+            font=("Segoe UI", 16, "bold"),
+            foreground=COLORS["text"],
+            background=COLORS["glass_bg"]
+        )
+        
+        style.configure(
+            "Subheader.TLabel",
+            font=("Segoe UI", 12),
+            foreground=COLORS["text"],
+            background=COLORS["bg"]
+        )
+        
+        style.configure(
+            "Glass.Subheader.TLabel",
+            font=("Segoe UI", 12),
+            foreground=COLORS["text"],
+            background=COLORS["glass_bg"]
+        )
+        
+        # Configure modern button styles with glass effect
+        style.configure(
+            "Glass.TButton",
+            background=COLORS["glass_highlight"],
+            foreground=COLORS["text"],
+            padding=(10, 5),
+            font=("Segoe UI", 10),
+            relief="flat",
+            borderwidth=0
+        )
+        
+        style.map(
+            "Glass.TButton",
+            background=[("active", COLORS.get("accent_hover", "#0069d9"))],
+            foreground=[("active", "#FFFFFF")]
+        )
+        
+        # Configure entry styles with glass effect
+        style.configure(
+            "Glass.TEntry",
+            fieldbackground=COLORS["glass_highlight"],
+            foreground=COLORS["text"],
+            padding=5,
+            relief="flat",
+            borderwidth=0
+        )
+        
+        # Configure checkbutton style with glass effect
+        style.configure(
+            "Glass.TCheckbutton",
+            background=COLORS["glass_bg"],
+            foreground=COLORS["text"],
+            font=("Segoe UI", 10)
+        )
+        
+        # Configure radiobutton style with glass effect
+        style.configure(
+            "Glass.TRadiobutton",
+            background=COLORS["glass_bg"],
+            foreground=COLORS["text"],
+            font=("Segoe UI", 10)
+        )
+        
+        # Special style for timer display with glass effect
+        style.configure(
+            "Glass.Timer.TLabel",
+            font=("Consolas", 14, "bold"),
+            foreground=COLORS.get("timer_text", COLORS["accent"]),
+            background=COLORS["glass_bg"],
+            padding=10
+        )
+        
+        # Configure scrollbar style with glass effect
+        style.configure(
+            "Glass.Vertical.TScrollbar",
+            background=COLORS["glass_highlight"],
+            troughcolor=COLORS["glass_bg"],
+            borderwidth=0,
+            arrowsize=14
+        )
+        
+        # Configure treeview style with glass effect
+        style.configure(
+            "Glass.Treeview",
+            background=COLORS["glass_highlight"],
+            foreground=COLORS["text"],
+            fieldbackground=COLORS["glass_highlight"],
+            font=("Segoe UI", 9),
+            rowheight=25
+        )
+        
+        style.configure(
+            "Glass.Treeview.Heading",
+            font=("Segoe UI", 10, "bold"),
+            background=COLORS["glass_highlight"],
+            foreground=COLORS["text"]
+        )
+        
+        # Add hover effect for treeview items
+        style.map(
+            "Glass.Treeview",
+            background=[("selected", COLORS["accent"])],
+            foreground=[("selected", "white")]
+        )
+        
+        # Regular styles for backward compatibility
+        style.configure(
+            "TFrame", 
+            background=COLORS["bg"]
+        )
+        
+        style.configure(
+            "TButton",
+            background=COLORS["accent"],
+            foreground="white",
+            padding=(10, 5),
+            font=("Segoe UI", 10),
+            relief="flat"
+        )
+        
+        style.map(
+            "TButton",
+            background=[("active", COLORS.get("accent_hover", "#0069d9"))],
+            foreground=[("active", "white")]
+        )
+        
+        style.configure(
+            "TEntry",
+            fieldbackground=COLORS.get("input_bg", COLORS["highlight"]),
+            foreground=COLORS["text"],
+            padding=5,
+            relief="solid",
+            borderwidth=1
+        )
+        
+        style.configure(
+            "TCheckbutton",
+            background=COLORS["bg"],
+            foreground=COLORS["text"],
+            font=("Segoe UI", 10)
+        )
+        
+        style.configure(
+            "TRadiobutton",
+            background=COLORS["bg"],
+            foreground=COLORS["text"],
+            font=("Segoe UI", 10)
+        )
+        
+        style.configure(
+            "Timer.TLabel",
+            font=("Consolas", 14, "bold"),
+            foreground=COLORS.get("timer_text", COLORS["accent"]),
+            background=COLORS["bg"],
+            padding=10
+        )
+        
+        style.configure(
+            "TScrollbar",
+            background=COLORS["highlight"],
+            troughcolor=COLORS["bg"],
+            borderwidth=0,
+            arrowsize=14
+        )
+        
+        style.configure(
+            "Treeview",
+            background=COLORS.get("input_bg", COLORS["highlight"]),
+            foreground=COLORS["text"],
+            fieldbackground=COLORS.get("input_bg", COLORS["highlight"]),
+            font=("Segoe UI", 9),
+            rowheight=25
+        )
+        
+        style.configure(
+            "Treeview.Heading",
+            font=("Segoe UI", 10, "bold"),
+            background=COLORS["highlight"],
+            foreground=COLORS["text"]
+        )
+        
+        style.map(
+            "Treeview",
+            background=[("selected", COLORS["accent"])],
+            foreground=[("selected", "white")]
+        )
+        
+        return style
+        
+    except Exception as e:
+        print(f"Error configuring styles: {e}")
+        return None
+
+
 def create_ui():
-    """Create the application UI elements"""
+    """Create the application UI elements with modern glass effect and scrollability"""
     global app_icon, root, key_lock_btn, mouse_lock_btn, key_block_on_min, window_transparency_var, status_var, footer, shortcut
     
     # Configure all styles
@@ -125,16 +419,49 @@ def create_ui():
     root.columnconfigure(0, weight=1)
     root.rowconfigure(0, weight=1)
     
-    # Create main tab
-    main_tab = ttk.Frame(main_frame, padding="10")
+    # Create main tab with scrollability
+    main_tab = ttk.Frame(main_frame, style="TFrame")
+    
+    # Create a canvas and scrollbar for scrollability
+    main_canvas = tk.Canvas(main_tab, bg=COLORS["bg"], highlightthickness=0)
+    main_scrollbar = ttk.Scrollbar(main_tab, orient="vertical", command=main_canvas.yview, style="Vertical.TScrollbar")
+    
+    # Create frame inside canvas for content
+    main_content = ttk.Frame(main_canvas, style="TFrame")
+    
+    # Configure scrolling
+    main_canvas.configure(yscrollcommand=main_scrollbar.set)
+    main_canvas.pack(side="left", fill="both", expand=True)
+    main_scrollbar.pack(side="right", fill="y")
+    
+    # Create window in canvas for content
+    main_canvas_window = main_canvas.create_window((0, 0), window=main_content, anchor="nw", tags="main_content")
+    
+    # Configure canvas scrolling
+    def on_canvas_configure(event):
+        main_canvas.configure(scrollregion=main_canvas.bbox("all"))
+        width = event.width
+        main_canvas.itemconfig(main_canvas_window, width=width)
+    
+    main_canvas.bind("<Configure>", on_canvas_configure)
+    
+    # Add mouse wheel scrolling
+    def on_mousewheel(event):
+        main_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+    
+    main_canvas.bind_all("<MouseWheel>", on_mousewheel)
+    
+    # Configure main_content for responsiveness
+    main_content.columnconfigure(0, weight=1)
+    
+    # Add the main_tab to the notebook
     main_frame.add(main_tab, text="Main")
-    main_tab.columnconfigure(0, weight=1)
     
     # Bind resize event to window
     root.bind("<Configure>", on_window_resize)
     
-    # Title frame
-    title_frame = ttk.Frame(main_tab)
+    # Title frame with glass effect
+    title_frame = ttk.Frame(main_content, style="Glass.TFrame")
     title_frame.grid(row=0, column=0, pady=(0, 10), sticky="ew")
     title_frame.columnconfigure(0, weight=1)
     
@@ -144,64 +471,98 @@ def create_ui():
         text="KeyLock", 
         font=("Segoe UI", 16, "bold"),
         image=app_icon, 
-        compound=tk.LEFT
+        compound=tk.LEFT,
+        style="Glass.Header.TLabel"
     )
     title_label.grid(row=0, column=0, sticky="w", padx=5)
     
-    # Buttons frame with responsive layout
-    button_frame = ttk.Frame(main_tab)
+    # Buttons frame with responsive layout and glass effect
+    button_frame = ttk.Frame(main_content, style="Glass.TFrame")
     button_frame.grid(row=1, column=0, pady=10, sticky="ew")
     button_frame.columnconfigure(0, weight=1)
     button_frame.columnconfigure(1, weight=1)
     
-    # Keyboard Lock button
+    # Keyboard Lock button with glass effect
     key_lock_btn = ttk.Button(
         button_frame,
         text="Lock Keyboard",
         command=toggle_keyboard_lock,
-        style="LockButton.TButton",
+        style="Glass.TButton",
         width=15
     )
     key_lock_btn.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
     
-    # Mouse Lock button
+    # Mouse Lock button with glass effect
     mouse_lock_btn = ttk.Button(
         button_frame,
         text="Lock Mouse",
         command=toggle_mouse_lock,
-        style="LockButton.TButton",
+        style="Glass.TButton",
         width=15
     )
     mouse_lock_btn.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
     
-    # Options frame
-    options_frame = ttk.LabelFrame(main_tab, text="Options", padding=10)
+    # Options frame with glass effect
+    options_frame = ttk.LabelFrame(main_content, text="Options", padding=10, style="Glass.TFrame")
     options_frame.grid(row=2, column=0, pady=10, sticky="ew")
     options_frame.columnconfigure(0, weight=1)
     
-    # Create status section on main tab
-    status_frame = create_status_section(main_tab)
+    # Create status section with glass effect
+    status_frame = create_status_section(main_content)
     
-    # Create buttons section on main tab
-    create_buttons_section(main_tab)
+    # Create buttons section with glass effect
+    create_buttons_section(main_content)
     
-    # Create settings section on main tab
-    create_settings_section(main_tab)
+    # Create settings section with glass effect
+    create_settings_section(main_content)
     
-    # Create scheduler UI on scheduler tab
-    scheduler_frame = tk.Frame(main_frame, bg=COLORS["bg"])
+    # Create scheduler UI on scheduler tab with scrollability
+    scheduler_frame = ttk.Frame(main_frame, style="TFrame")
+    
+    # Create a canvas and scrollbar for scheduler tab scrollability
+    scheduler_canvas = tk.Canvas(scheduler_frame, bg=COLORS["bg"], highlightthickness=0)
+    scheduler_scrollbar = ttk.Scrollbar(scheduler_frame, orient="vertical", command=scheduler_canvas.yview, style="Vertical.TScrollbar")
+    
+    # Create frame inside canvas for scheduler content
+    scheduler_content = ttk.Frame(scheduler_canvas, style="TFrame")
+    
+    # Configure scrolling
+    scheduler_canvas.configure(yscrollcommand=scheduler_scrollbar.set)
+    scheduler_canvas.pack(side="left", fill="both", expand=True)
+    scheduler_scrollbar.pack(side="right", fill="y")
+    
+    # Create window in canvas for scheduler content
+    scheduler_canvas_window = scheduler_canvas.create_window((0, 0), window=scheduler_content, anchor="nw", tags="scheduler_content")
+    
+    # Configure canvas scrolling
+    def on_scheduler_canvas_configure(event):
+        scheduler_canvas.configure(scrollregion=scheduler_canvas.bbox("all"))
+        width = event.width
+        scheduler_canvas.itemconfig(scheduler_canvas_window, width=width)
+    
+    scheduler_canvas.bind("<Configure>", on_scheduler_canvas_configure)
+    
+    # Add mouse wheel scrolling for scheduler tab
+    def on_scheduler_mousewheel(event):
+        scheduler_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+    
+    scheduler_canvas.bind_all("<MouseWheel>", on_scheduler_mousewheel)
+    
+    # Configure scheduler_content for responsiveness
+    scheduler_content.columnconfigure(0, weight=1)
+    
+    # Add the scheduler tab to notebook
     main_frame.add(scheduler_frame, text="Scheduler")
     
-    # Populate the scheduler tab
-    create_scheduler_section(scheduler_frame)
+    # Populate the scheduler tab with glass effect
+    create_scheduler_section(scheduler_content)
     
-    # Create footer
-    footer = tk.Label(
-        main_tab, 
+    # Create footer with glass effect
+    footer = ttk.Label(
+        main_content, 
         text="Press " + shortcut.get() + " to unlock", 
-        bg=COLORS["bg"], 
-        fg=COLORS["light_text"],
-        pady=10
+        style="Glass.TLabel",
+        padding=10
     )
     footer.grid(row=3, column=0, sticky="ew", pady=(0, 10))
     
@@ -340,166 +701,6 @@ def spacious_layout():
         print(f"Error applying spacious layout: {e}")
 
 
-def configure_styles():
-    """Configure the styles for the application"""
-    try:
-        style = ttk.Style()
-        style.theme_use('clam')  # Use a modern base theme
-
-        # Ensure we have all necessary colors in the COLORS dictionary
-        initialize_colors()
-        
-        # Configure styles for various UI elements
-        style.configure(
-            "TFrame", 
-            background=COLORS["bg"]
-        )
-        
-        style.configure(
-            "TLabel", 
-            background=COLORS["bg"], 
-            foreground=COLORS["text"],
-            font=("Segoe UI", 10)
-        )
-        
-        style.configure(
-            "Header.TLabel",
-            font=("Segoe UI", 16, "bold"),
-            foreground=COLORS["text"],
-            background=COLORS["bg"]
-        )
-        
-        style.configure(
-            "Subheader.TLabel",
-            font=("Segoe UI", 12),
-            foreground=COLORS["text"],
-            background=COLORS["bg"]
-        )
-        
-        # Configure button styles
-        style.configure(
-            "TButton",
-            background=COLORS["accent"],
-            foreground="white",
-            padding=(10, 5),
-            font=("Segoe UI", 10),
-            relief="flat"
-        )
-        
-        style.map(
-            "TButton",
-            background=[("active", COLORS.get("accent_hover", "#0069d9"))],
-            foreground=[("active", "white")]
-        )
-        
-        # Configure entry styles
-        style.configure(
-            "TEntry",
-            fieldbackground=COLORS.get("input_bg", COLORS["highlight"]),
-            foreground=COLORS["text"],
-            padding=5,
-            relief="solid",
-            borderwidth=1
-        )
-        
-        # Configure checkbutton style
-        style.configure(
-            "TCheckbutton",
-            background=COLORS["bg"],
-            foreground=COLORS["text"],
-            font=("Segoe UI", 10)
-        )
-        
-        # Configure radiobutton style
-        style.configure(
-            "TRadiobutton",
-            background=COLORS["bg"],
-            foreground=COLORS["text"],
-            font=("Segoe UI", 10)
-        )
-        
-        # Special style for timer display
-        style.configure(
-            "Timer.TLabel",
-            font=("Consolas", 14, "bold"),
-            foreground=COLORS.get("timer_text", COLORS["accent"]),
-            background=COLORS["bg"],
-            padding=10
-        )
-        
-        # Configure scrollbar style
-        style.configure(
-            "TScrollbar",
-            background=COLORS["highlight"],
-            troughcolor=COLORS["bg"],
-            borderwidth=0,
-            arrowsize=14
-        )
-        
-        # Configure treeview style
-        style.configure(
-            "Treeview",
-            background=COLORS.get("input_bg", COLORS["highlight"]),
-            foreground=COLORS["text"],
-            fieldbackground=COLORS.get("input_bg", COLORS["highlight"]),
-            font=("Segoe UI", 9),
-            rowheight=25
-        )
-        
-        style.configure(
-            "Treeview.Heading",
-            font=("Segoe UI", 10, "bold"),
-            background=COLORS["highlight"],
-            foreground=COLORS["text"]
-        )
-        
-        # Add hover effect for treeview items
-        style.map(
-            "Treeview",
-            background=[("selected", COLORS["accent"])],
-            foreground=[("selected", "white")]
-        )
-        
-        return style
-        
-    except Exception as e:
-        print(f"Error configuring styles: {e}")
-        return None
-
-
-def initialize_colors():
-    """Initialize the COLORS dictionary with all necessary UI colors"""
-    global COLORS
-    
-    # Make sure our COLORS dictionary has all the necessary colors
-    # with appropriate defaults if they're not defined
-    
-    # Core colors - should be already defined
-    if "bg" not in COLORS:
-        COLORS["bg"] = "#F5F5F5"  # Default background
-        
-    if "text" not in COLORS:
-        COLORS["text"] = "#333333"  # Default text color
-        
-    if "accent" not in COLORS:
-        COLORS["accent"] = "#007BFF"  # Default accent color (Blue)
-        
-    if "highlight" not in COLORS:
-        COLORS["highlight"] = "#F0F0F0"  # Default highlight color
-    
-    # Additional colors for enhanced UI
-    COLORS.setdefault("light_text", "#777777")  # For secondary text
-    COLORS.setdefault("border", "#CCCCCC")      # For borders
-    COLORS.setdefault("input_bg", COLORS["highlight"])  # Input background
-    COLORS.setdefault("accent_hover", "#0069d9")  # Darker accent for hover
-    COLORS.setdefault("timer_text", COLORS["accent"])  # For timer text
-    COLORS.setdefault("success", "#28a745")     # Green for success messages
-    COLORS.setdefault("error", "#dc3545")       # Red for errors
-    COLORS.setdefault("warning", "#ffc107")     # Yellow for warnings
-    
-    return COLORS
-
-
 def create_header_section(parent):
     """Create the header section of the UI"""
     try:
@@ -530,25 +731,31 @@ def create_header_section(parent):
 
 
 def create_status_section(parent):
-    """Create the status section of the UI with device status indicators"""
+    """Create the status section of the UI with glass effect"""
     global keyboard_img, mouse_img, keyboard_img_label, mouse_img_label, keyboard_status, mouse_status
     
     try:
-        # Status frames
-        status_frame = tk.Frame(parent, bg=COLORS["bg"], padx=20, pady=10)
-        status_frame.grid(row=1, column=0, sticky="ew")
+        # Status frames with glass effect
+        status_frame = ttk.Frame(parent, style="Glass.TFrame", padding=10)
+        status_frame.grid(row=1, column=0, sticky="ew", padx=20)
         
         # Configure status frame for responsive design
         status_frame.columnconfigure(0, weight=1)
         status_frame.columnconfigure(1, weight=1)
         
-        # Device status displays
-        keyboard_status_frame = tk.Frame(status_frame, bg=COLORS["bg"], padx=10, pady=10, 
-                                         highlightbackground=COLORS["border"], highlightthickness=1)
+        # Device status displays with glass effect
+        keyboard_status_frame = ttk.Frame(
+            status_frame, 
+            style="Glass.TFrame",
+            padding=10
+        )
         keyboard_status_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
         
-        mouse_status_frame = tk.Frame(status_frame, bg=COLORS["bg"], padx=10, pady=10,
-                                      highlightbackground=COLORS["border"], highlightthickness=1)
+        mouse_status_frame = ttk.Frame(
+            status_frame, 
+            style="Glass.TFrame",
+            padding=10
+        )
         mouse_status_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
         
         try:
@@ -564,34 +771,46 @@ def create_status_section(parent):
             mouse_locked_image = tk.PhotoImage(width=32, height=32)
             mouse_unlocked_image = tk.PhotoImage(width=32, height=32)
         
-        # Keyboard status
-        keyboard_label = tk.Label(keyboard_status_frame, text="Keyboard", 
-                                 font=("Segoe UI", 11, "bold"),
-                                 bg=COLORS["bg"], fg=COLORS["text"])
+        # Keyboard status with glass effect
+        keyboard_label = ttk.Label(
+            keyboard_status_frame, 
+            text="Keyboard", 
+            style="Glass.Subheader.TLabel"
+        )
         keyboard_label.pack(pady=(0, 5))
         
         keyboard_img = keyboard_unlocked_image
-        keyboard_img_label = tk.Label(keyboard_status_frame, image=keyboard_img, bg=COLORS["bg"])
+        keyboard_img_label = ttk.Label(keyboard_status_frame, image=keyboard_img, style="Glass.TLabel")
         keyboard_img_label.pack(pady=5)
         
-        keyboard_status = tk.Label(keyboard_status_frame, text="Unlocked", 
-                                  bg=COLORS["highlight"], fg=COLORS["secondary"],
-                                  width=15, pady=3)
+        keyboard_status = ttk.Label(
+            keyboard_status_frame, 
+            text="Unlocked", 
+            style="Glass.TLabel",
+            width=15,
+            padding=5
+        )
         keyboard_status.pack(pady=(5, 0))
         
-        # Mouse status
-        mouse_label = tk.Label(mouse_status_frame, text="Mouse", 
-                              font=("Segoe UI", 11, "bold"),
-                              bg=COLORS["bg"], fg=COLORS["text"])
+        # Mouse status with glass effect
+        mouse_label = ttk.Label(
+            mouse_status_frame, 
+            text="Mouse", 
+            style="Glass.Subheader.TLabel"
+        )
         mouse_label.pack(pady=(0, 5))
         
         mouse_img = mouse_unlocked_image
-        mouse_img_label = tk.Label(mouse_status_frame, image=mouse_img, bg=COLORS["bg"])
+        mouse_img_label = ttk.Label(mouse_status_frame, image=mouse_img, style="Glass.TLabel")
         mouse_img_label.pack(pady=5)
         
-        mouse_status = tk.Label(mouse_status_frame, text="Unlocked", 
-                               bg=COLORS["highlight"], fg=COLORS["secondary"],
-                               width=15, pady=3)
+        mouse_status = ttk.Label(
+            mouse_status_frame, 
+            text="Unlocked", 
+            style="Glass.TLabel",
+            width=15,
+            padding=5
+        )
         mouse_status.pack(pady=(5, 0))
         
         return status_frame
@@ -1048,46 +1267,44 @@ def unlock_all_devices():
 
 
 def create_scheduler_section(parent):
-    """Create the scheduler UI section"""
+    """Create the scheduler UI section with glass effect"""
     try:
-        # Header with improved visual hierarchy
-        scheduler_header = tk.Label(
+        # Header with improved visual hierarchy and glass effect
+        scheduler_header = ttk.Label(
             parent, 
             text="Scheduled Locking", 
-            font=("Segoe UI", 18, "bold"), 
-            bg=COLORS["bg"], 
-            fg=COLORS["text"]
+            style="Glass.Header.TLabel"
         )
         scheduler_header.grid(row=0, column=0, sticky="w", padx=20, pady=(20, 15))
         
-        # Add a descriptive subheader
-        scheduler_subheader = tk.Label(
+        # Add a descriptive subheader with glass effect
+        scheduler_subheader = ttk.Label(
             parent,
             text="Create and manage scheduled device locks and automatic unlocks", 
-            font=("Segoe UI", 10),
-            bg=COLORS["bg"],
-            fg=COLORS.get("light_text", "#777777")
+            style="Glass.Subheader.TLabel"
         )
         scheduler_subheader.grid(row=1, column=0, sticky="w", padx=20, pady=(0, 15))
         
-        # Schedules list frame with improved visual design
-        schedules_frame = tk.Frame(parent, bg=COLORS["bg"], 
-                                  highlightbackground=COLORS.get("border", "#CCCCCC"),
-                                  highlightthickness=1)
+        # Schedules list frame with glass effect
+        schedules_frame = ttk.Frame(
+            parent, 
+            style="Glass.TFrame",
+            padding=5
+        )
         schedules_frame.grid(row=2, column=0, sticky="nsew", padx=20, pady=5)
         
         # Configure for responsive layout
         schedules_frame.columnconfigure(0, weight=1)
         schedules_frame.rowconfigure(0, weight=1)
         
-        # Create a treeview for schedules with modern styling
+        # Create a treeview for schedules with glass styling
         columns = ("name", "type", "action", "time", "duration", "enabled")
         schedule_tree = ttk.Treeview(
             schedules_frame, 
             columns=columns, 
             show="headings", 
             height=6,
-            style="Treeview"
+            style="Glass.Treeview"
         )
         
         # Define headings
@@ -1110,14 +1327,19 @@ def create_scheduler_section(parent):
         for schedule in schedule_manager.get_schedules():
             add_schedule_to_tree(schedule_tree, schedule)
         
-        # Add scrollbar with modern styling
-        scrollbar = ttk.Scrollbar(schedules_frame, orient="vertical", command=schedule_tree.yview)
+        # Add scrollbar with glass styling
+        scrollbar = ttk.Scrollbar(
+            schedules_frame, 
+            orient="vertical", 
+            command=schedule_tree.yview, 
+            style="Glass.Vertical.TScrollbar"
+        )
         schedule_tree.configure(yscrollcommand=scrollbar.set)
         scrollbar.grid(row=0, column=1, sticky="ns")
         schedule_tree.grid(row=0, column=0, sticky="nsew", padx=1, pady=1)
         
-        # Buttons frame with responsive layout
-        buttons_frame = tk.Frame(parent, bg=COLORS["bg"])
+        # Buttons frame with responsive layout and glass effect
+        buttons_frame = ttk.Frame(parent, style="Glass.TFrame", padding=5)
         buttons_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
         
         # Configure for responsive design
@@ -1125,102 +1347,50 @@ def create_scheduler_section(parent):
         buttons_frame.columnconfigure(1, weight=1)
         buttons_frame.columnconfigure(2, weight=1)
         
-        # Buttons with enhanced styling
-        add_button = tk.Button(
+        # Buttons with glass styling
+        add_button = ttk.Button(
             buttons_frame,
             text="Add Schedule",
-            bg=COLORS["accent"],
-            fg="white",
-            relief="flat",
-            borderwidth=0,
-            padx=15,
-            pady=8,
-            font=("Segoe UI", 10, "bold"),
-            cursor="hand2",
-            activebackground="#0069d9",
-            activeforeground="white",
-            command=lambda: show_add_schedule_dialog(schedule_tree)
+            command=lambda: show_add_schedule_dialog(schedule_tree),
+            style="Glass.TButton"
         )
         add_button.grid(row=0, column=0, sticky="ew", padx=(0, 5))
         
-        edit_button = tk.Button(
+        edit_button = ttk.Button(
             buttons_frame,
             text="Edit",
-            bg=COLORS["accent"],
-            fg="white",
-            relief="flat",
-            borderwidth=0,
-            padx=15,
-            pady=8,
-            font=("Segoe UI", 10),
-            cursor="hand2",
-            activebackground="#0069d9",
-            activeforeground="white",
-            command=lambda: edit_selected_schedule(schedule_tree)
+            command=lambda: edit_selected_schedule(schedule_tree),
+            style="Glass.TButton"
         )
         edit_button.grid(row=0, column=1, sticky="ew", padx=5)
         
-        delete_button = tk.Button(
+        delete_button = ttk.Button(
             buttons_frame,
             text="Delete",
-            bg="#dc3545",
-            fg="white",
-            relief="flat",
-            borderwidth=0,
-            padx=15,
-            pady=8,
-            font=("Segoe UI", 10),
-            cursor="hand2",
-            activebackground="#c82333",
-            activeforeground="white",
-            command=lambda: delete_selected_schedule(schedule_tree)
+            command=lambda: delete_selected_schedule(schedule_tree),
+            style="Glass.TButton"
         )
         delete_button.grid(row=0, column=2, sticky="ew", padx=(5, 0))
         
-        # Add hover effects for buttons
-        def on_enter(e, button, orig_color, hover_color):
-            button['background'] = hover_color
-            
-        def on_leave(e, button, orig_color):
-            button['background'] = orig_color
-            
-        add_button.bind("<Enter>", lambda e: on_enter(e, add_button, COLORS["accent"], "#0069d9"))
-        add_button.bind("<Leave>", lambda e: on_leave(e, add_button, COLORS["accent"]))
-        
-        edit_button.bind("<Enter>", lambda e: on_enter(e, edit_button, COLORS["accent"], "#0069d9"))
-        edit_button.bind("<Leave>", lambda e: on_leave(e, edit_button, COLORS["accent"]))
-        
-        delete_button.bind("<Enter>", lambda e: on_enter(e, delete_button, "#dc3545", "#c82333"))
-        delete_button.bind("<Leave>", lambda e: on_leave(e, delete_button, "#dc3545"))
-        
-        # Add visual separator 
+        # Add visual separator with glass effect
         separator = ttk.Separator(parent, orient="horizontal")
         separator.grid(row=4, column=0, sticky="ew", padx=20, pady=15)
         
-        # Add a countdown timer section with enhanced styling
-        countdown_frame = tk.LabelFrame(
+        # Add a countdown timer section with glass effect
+        countdown_frame = ttk.LabelFrame(
             parent, 
             text="Quick Countdown Timer", 
-            bg=COLORS["bg"], 
-            fg=COLORS["text"],
-            font=("Segoe UI", 12, "bold"),
-            padx=20, 
-            pady=20,
-            highlightbackground=COLORS.get("border", "#CCCCCC"),
-            highlightthickness=1,
-            bd=1
+            style="Glass.TFrame",
+            padding=15
         )
         countdown_frame.grid(row=5, column=0, sticky="ew", padx=20, pady=10)
         
-        # Add helpful information text
-        info_text = tk.Label(
+        # Add helpful information text with glass effect
+        info_text = ttk.Label(
             countdown_frame,
             text="Lock your devices after a countdown, or set a timed auto-unlock duration",
-            bg=COLORS["bg"],
-            fg=COLORS.get("light_text", "#777777"),
-            font=("Segoe UI", 9),
-            wraplength=500,
-            justify="left"
+            style="Glass.TLabel",
+            wraplength=500
         )
         info_text.grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, 15))
         
@@ -1229,16 +1399,14 @@ def create_scheduler_section(parent):
         countdown_frame.columnconfigure(1, weight=3)
         countdown_frame.columnconfigure(2, weight=5)
         
-        # Minutes entry with better styling
-        minutes_frame = tk.Frame(countdown_frame, bg=COLORS["bg"])
+        # Minutes entry with glass styling
+        minutes_frame = ttk.Frame(countdown_frame, style="Glass.TFrame")
         minutes_frame.grid(row=1, column=0, sticky="w")
         
-        minutes_label = tk.Label(
+        minutes_label = ttk.Label(
             minutes_frame, 
             text="Minutes:", 
-            bg=COLORS["bg"], 
-            fg=COLORS["text"],
-            font=("Segoe UI", 10, "bold")
+            style="Glass.TLabel"
         )
         minutes_label.pack(side="left", padx=(0, 5))
         
@@ -1249,26 +1417,26 @@ def create_scheduler_section(parent):
             to=60,
             width=3,
             textvariable=minutes_var,
-            bg=COLORS.get("input_bg", COLORS["highlight"]),
+            bg=COLORS["glass_highlight"],
             fg=COLORS["text"],
             font=("Segoe UI", 10, "bold"),
-            buttonbackground=COLORS.get("highlight", "#F0F0F0"),
-            relief="solid",
-            bd=1
+            buttonbackground=COLORS["glass_highlight"],
+            relief="flat",
+            bd=0
         )
         minutes_entry.pack(side="left")
         
-        # Visual countdown display with circular progress bar
-        countdown_display_frame = tk.Frame(countdown_frame, bg=COLORS["bg"], padx=10, pady=5)
+        # Visual countdown display with circular progress bar and glass effect
+        countdown_display_frame = ttk.Frame(countdown_frame, style="Glass.TFrame", padding=5)
         countdown_display_frame.grid(row=1, column=1, sticky="ew")
         
-        # Create a canvas for the circular progress bar
+        # Create a canvas for the circular progress bar with glass effect
         canvas_size = 120
         canvas = tk.Canvas(
             countdown_display_frame, 
             width=canvas_size, 
             height=canvas_size, 
-            bg=COLORS["bg"], 
+            bg=COLORS["glass_bg"], 
             highlightthickness=0
         )
         canvas.pack(side="right")
@@ -1278,15 +1446,15 @@ def create_scheduler_section(parent):
         outer_radius = (canvas_size // 2) - 5
         inner_radius = outer_radius - bar_width
         
-        # Background circle
+        # Background circle with glass effect
         canvas.create_oval(
             (canvas_size // 2) - outer_radius,
             (canvas_size // 2) - outer_radius,
             (canvas_size // 2) + outer_radius,
             (canvas_size // 2) + outer_radius,
-            outline=COLORS.get("highlight", "#F0F0F0"),
+            outline=COLORS["glass_highlight"],
             width=bar_width,
-            fill=COLORS["bg"]
+            fill=COLORS["glass_bg"]
         )
         
         # Progress arc (initially empty)
@@ -1302,12 +1470,12 @@ def create_scheduler_section(parent):
             style="arc"
         )
         
-        # Create timer display that will be updated during countdown
+        # Create timer display with glass effect
         timer_var = tk.StringVar(value="Ready")
         timer_display = tk.Label(
             canvas,
             textvariable=timer_var,
-            bg=COLORS["bg"],
+            bg=COLORS["glass_bg"],
             fg=COLORS.get("timer_text", COLORS["accent"]),
             font=("Consolas", 14, "bold")
         )
@@ -1324,73 +1492,59 @@ def create_scheduler_section(parent):
         parent.timer_var = timer_var
         parent.timer_display = timer_display
         
-        # Lock type options with improved layout
-        lock_type_frame = tk.Frame(countdown_frame, bg=COLORS["bg"])
+        # Lock type options with glass effect
+        lock_type_frame = ttk.Frame(countdown_frame, style="Glass.TFrame")
         lock_type_frame.grid(row=2, column=0, columnspan=2, sticky="w", pady=15)
         
         lock_type_var = tk.StringVar(value="both")
         
-        # Add a subtitle for options
-        lock_type_label = tk.Label(
+        # Add a subtitle for options with glass effect
+        lock_type_label = ttk.Label(
             lock_type_frame,
             text="What to lock:",
-            bg=COLORS["bg"],
-            fg=COLORS["text"],
-            font=("Segoe UI", 10, "bold")
+            style="Glass.TLabel"
         )
         lock_type_label.pack(side="left", padx=(0, 15))
         
-        # Use custom radio button style
-        keyboard_radio = tk.Radiobutton(
+        # Use custom radio button style with glass effect
+        keyboard_radio = ttk.Radiobutton(
             lock_type_frame,
             text="Keyboard",
             variable=lock_type_var,
             value="keyboard",
-            bg=COLORS["bg"],
-            fg=COLORS["text"],
-            selectcolor=COLORS.get("highlight", "#F0F0F0"),
-            font=("Segoe UI", 10)
+            style="Glass.TRadiobutton"
         )
         keyboard_radio.pack(side="left", padx=(0, 10))
         
-        mouse_radio = tk.Radiobutton(
+        mouse_radio = ttk.Radiobutton(
             lock_type_frame,
             text="Mouse",
             variable=lock_type_var,
             value="mouse",
-            bg=COLORS["bg"],
-            fg=COLORS["text"],
-            selectcolor=COLORS.get("highlight", "#F0F0F0"),
-            font=("Segoe UI", 10)
+            style="Glass.TRadiobutton"
         )
         mouse_radio.pack(side="left", padx=(0, 10))
         
-        both_radio = tk.Radiobutton(
+        both_radio = ttk.Radiobutton(
             lock_type_frame,
             text="Both",
             variable=lock_type_var,
             value="both",
-            bg=COLORS["bg"],
-            fg=COLORS["text"],
-            selectcolor=COLORS.get("highlight", "#F0F0F0"),
-            font=("Segoe UI", 10)
+            style="Glass.TRadiobutton"
         )
         both_radio.pack(side="left")
         
-        # Duration option for auto-unlock
-        duration_frame = tk.Frame(countdown_frame, bg=COLORS["bg"])
+        # Duration option for auto-unlock with glass effect
+        duration_frame = ttk.Frame(countdown_frame, style="Glass.TFrame")
         duration_frame.grid(row=3, column=0, columnspan=2, sticky="w", pady=(0, 15))
         
-        # Create an auto-unlock option
+        # Create an auto-unlock option with glass effect
         auto_unlock_var = tk.BooleanVar(value=True)
-        auto_unlock_check = tk.Checkbutton(
+        auto_unlock_check = ttk.Checkbutton(
             duration_frame,
             text="Auto-unlock after",
             variable=auto_unlock_var,
-            bg=COLORS["bg"],
-            fg=COLORS["text"],
-            selectcolor=COLORS.get("highlight", "#F0F0F0"),
-            font=("Segoe UI", 10, "bold")
+            style="Glass.TCheckbutton"
         )
         auto_unlock_check.pack(side="left", padx=(0, 5))
         
@@ -1401,21 +1555,19 @@ def create_scheduler_section(parent):
             to=120,
             width=3,
             textvariable=unlock_minutes_var,
-            bg=COLORS.get("input_bg", COLORS["highlight"]),
+            bg=COLORS["glass_highlight"],
             fg=COLORS["text"],
             font=("Segoe UI", 10),
-            buttonbackground=COLORS.get("highlight", "#F0F0F0"),
-            relief="solid",
-            bd=1
+            buttonbackground=COLORS["glass_highlight"],
+            relief="flat",
+            bd=0
         )
         unlock_minutes_entry.pack(side="left", padx=(0, 5))
         
-        minutes_text = tk.Label(
+        minutes_text = ttk.Label(
             duration_frame,
             text="minutes",
-            bg=COLORS["bg"],
-            fg=COLORS["text"],
-            font=("Segoe UI", 10)
+            style="Glass.TLabel"
         )
         minutes_text.pack(side="left")
         
@@ -1423,23 +1575,13 @@ def create_scheduler_section(parent):
         parent.auto_unlock_var = auto_unlock_var
         parent.unlock_minutes_var = unlock_minutes_var
         
-        # Start button with enhanced styling and improved position
-        buttons_container = tk.Frame(countdown_frame, bg=COLORS["bg"])
+        # Start button with glass effect
+        buttons_container = ttk.Frame(countdown_frame, style="Glass.TFrame")
         buttons_container.grid(row=4, column=0, columnspan=3, sticky="e")
         
-        start_button = tk.Button(
+        start_button = ttk.Button(
             buttons_container,
             text="Start Countdown",
-            bg=COLORS["accent"],
-            fg="white",
-            relief="flat",
-            borderwidth=0,
-            padx=15,
-            pady=10,
-            font=("Segoe UI", 11, "bold"),
-            cursor="hand2",
-            activebackground="#0069d9",
-            activeforeground="white",
             command=lambda: start_enhanced_countdown(
                 minutes_var.get(), 
                 lock_type_var.get(),
@@ -1448,13 +1590,10 @@ def create_scheduler_section(parent):
                 timer_var,
                 progress_arc,
                 canvas
-            )
+            ),
+            style="Glass.TButton"
         )
         start_button.pack(side="right")
-        
-        # Add hover effect
-        start_button.bind("<Enter>", lambda e: on_enter(e, start_button, COLORS["accent"], "#0069d9"))
-        start_button.bind("<Leave>", lambda e: on_leave(e, start_button, COLORS["accent"]))
         
         # Refresh schedule list periodically
         def refresh_schedule_list():
