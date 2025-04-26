@@ -1,0 +1,33 @@
+2025-04-26 22:56:35,036 - keylock-scheduler - INFO - Scheduler loop started
+2025-04-26 22:56:35,036 - keylock-scheduler - INFO - Scheduler started
+2025-04-26 22:56:35,037 - keylock-scheduler - INFO - No schedules file found
+2025-04-26 22:57:07,914 - keylock-scheduler - INFO - Scheduler loop started
+2025-04-26 22:57:07,914 - keylock-scheduler - INFO - Scheduler started
+2025-04-26 22:57:07,916 - keylock-scheduler - INFO - No schedules file found
+2025-04-26 22:57:38,892 - keylock-scheduler - INFO - Scheduler loop started
+2025-04-26 22:57:38,893 - keylock-scheduler - INFO - Scheduler started
+2025-04-26 22:57:38,893 - keylock-scheduler - INFO - No schedules file found
+2025-04-26 22:57:50,309 - keylock-core - INFO - Keyboard locked
+2025-04-26 22:57:50,320 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-26 22:57:51,410 - keylock-core - INFO - Keyboard unlocked
+2025-04-26 22:58:16,239 - keylock-scheduler - INFO - Scheduled Countdown (1 min) to run at 2025-04-26 22:59:16.239455
+2025-04-26 22:58:16,241 - keylock-scheduler - INFO - Schedules saved to file
+2025-04-26 22:58:16,241 - keylock-scheduler - INFO - Added schedule: Countdown (1 min) (8c912ad9)
+2025-04-26 22:59:16,245 - keylock-scheduler - INFO - Executing schedule: Countdown (1 min) (8c912ad9)
+2025-04-26 22:59:16,263 - keylock-core - INFO - Keyboard locked
+2025-04-26 22:59:57,277 - keylock-core - INFO - Keyboard unlocked
+2025-04-26 22:59:57,278 - keylock-core - INFO - Mouse locked
+2025-04-26 23:00:08,964 - keylock-scheduler - INFO - Scheduler loop ended
+2025-04-26 23:00:08,964 - keylock-scheduler - INFO - Scheduler stopped
+2025-04-26 23:00:43,380 - keylock-scheduler - INFO - Scheduler loop started
+2025-04-26 23:00:43,380 - keylock-scheduler - INFO - Scheduler started
+2025-04-26 23:00:43,381 - keylock-scheduler - INFO - Loaded 1 schedules from file
+2025-04-26 23:00:43,382 - keylock-scheduler - INFO - Scheduled Countdown (1 min) to run at 2025-04-26 23:01:43.381675
+2025-04-26 23:00:49,385 - keylock-scheduler - INFO - Scheduler loop ended
+2025-04-26 23:00:49,386 - keylock-scheduler - INFO - Scheduler stopped
+2025-04-26 23:01:06,902 - keylock-scheduler - INFO - Scheduler loop started
+2025-04-26 23:01:06,903 - keylock-scheduler - INFO - Scheduler started
+2025-04-26 23:01:06,904 - keylock-scheduler - INFO - Loaded 1 schedules from file
+2025-04-26 23:01:06,905 - keylock-scheduler - INFO - Scheduled Countdown (1 min) to run at 2025-04-26 23:02:06.905394
+2025-04-26 23:01:40,923 - keylock-scheduler - INFO - Scheduler loop ended
+2025-04-26 23:01:40,923 - keylock-scheduler - INFO - Scheduler stopped

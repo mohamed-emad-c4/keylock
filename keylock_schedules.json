@@ -1,0 +1,10 @@
+{
+  "8c912ad9": {
+    "id": "8c912ad9",
+    "name": "Countdown (1 min)",
+    "action": "keyboard",
+    "time_type": "countdown",
+    "enabled": true,
+    "start_time": 60
+  }
+}
