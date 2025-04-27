@@ -4,7 +4,25 @@
     "name": "Countdown (1 min)",
     "action": "keyboard",
     "time_type": "countdown",
-    "enabled": true,
+    "enabled": false,
     "start_time": 60
+  },
+  "25edfe87": {
+    "id": "25edfe87",
+    "name": "Countdown (5 min)",
+    "action": "keyboard",
+    "time_type": "countdown",
+    "enabled": true,
+    "start_time": 300,
+    "duration": 300
+  },
+  "f719be49": {
+    "id": "f719be49",
+    "name": "Countdown (5 min)",
+    "action": "keyboard",
+    "time_type": "countdown",
+    "enabled": true,
+    "start_time": 300,
+    "duration": 300
   }
 }

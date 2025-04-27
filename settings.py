@@ -2,6 +2,7 @@ import os
 import threading
 import json
 from utils import resource_path
+from pathlib import Path
 
 CONFIG_FILE = resource_path("config.json")
 
@@ -73,6 +74,34 @@ config_template = """# KeyLock Configuration File
 &onstart_lock_keyboard@!@false
 &onstart_lock_mouse@!@false
 """
+
+# Default settings
+DEFAULT_SETTINGS = {
+    "theme": "light",
+    "start_with_windows": False,
+    "minimize_to_tray": True,
+    "lock_on_start": False
+}
+
+# Theme colors
+THEME_COLORS = {
+    "light": {
+        "background": "#FFFFFF",
+        "foreground": "#333333",
+        "accent": "#1976D2",
+        "accent_light": "#BBDEFB",
+        "accent_positive": "#4CAF50",
+        "accent_negative": "#F44336"
+    },
+    "dark": {
+        "background": "#121212",
+        "foreground": "#E0E0E0",
+        "accent": "#64B5F6",
+        "accent_light": "#0D47A1",
+        "accent_positive": "#66BB6A",
+        "accent_negative": "#E57373"
+    }
+}
 
 def get_default_config():
     """Return the default configuration"""
@@ -293,3 +322,60 @@ def update_ui_animation(root, from_colors, to_colors, duration=500):
     
     # Start animation
     update_step()
+
+def get_settings_file_path():
+    """Get the path to the settings file"""
+    app_data = os.getenv('APPDATA')
+    if not app_data:
+        # Fallback for non-Windows systems
+        app_data = str(Path.home() / '.keylock')
+    
+    keylock_dir = Path(app_data) / "KeyLock"
+    os.makedirs(keylock_dir, exist_ok=True)
+    
+    return keylock_dir / "settings.json"
+
+def load_settings():
+    """Load settings from the settings file"""
+    settings_file = get_settings_file_path()
+    
+    if settings_file.exists():
+        try:
+            with open(settings_file, 'r') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            # If there's an error loading settings, return defaults
+            return DEFAULT_SETTINGS.copy()
+    else:
+        # If the file doesn't exist, create it with default settings
+        save_settings(DEFAULT_SETTINGS)
+        return DEFAULT_SETTINGS.copy()
+
+def save_settings(settings):
+    """Save settings to the settings file"""
+    settings_file = get_settings_file_path()
+    
+    try:
+        with open(settings_file, 'w') as f:
+            json.dump(settings, f, indent=2)
+        return True
+    except IOError:
+        return False
+
+def get_theme_colors():
+    """Get the current theme colors based on settings"""
+    settings = load_settings()
+    theme = settings.get("theme", "light")
+    
+    return THEME_COLORS.get(theme, THEME_COLORS["light"])
+
+def update_setting(key, value):
+    """Update a single setting"""
+    settings = load_settings()
+    settings[key] = value
+    return save_settings(settings)
+
+def get_setting(key):
+    """Get a single setting value"""
+    settings = load_settings()
+    return settings.get(key, DEFAULT_SETTINGS.get(key))

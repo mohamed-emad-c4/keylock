@@ -18,6 +18,8 @@ from ui_components import (
     TabView, setup_theme, create_window, center_window
 )
 import time
+import ctypes
+from ctypes import wintypes
 
 # Global variables
 config = None
@@ -37,6 +39,7 @@ COLORS = {}
 schedule_manager = None
 app_icon = None
 countdown_active = False
+main_content = None
 
 
 def initialize_app():
@@ -45,7 +48,8 @@ def initialize_app():
     
     try:
         config = open_config("keylock.config")
-        current_theme = config.get("theme", "light")
+        # Always use dark theme regardless of configuration
+        current_theme = "dark" 
         refresh_rate = int(config.get("refresh_rate", "1500"))
         
         if os.name == "nt":
@@ -111,56 +115,92 @@ def load_asset(path):
 
 
 def initialize_colors():
-    """Initialize the COLORS dictionary with all necessary UI colors"""
+    """Initialize the COLORS dictionary with all necessary UI colors and enhanced palette"""
     global COLORS
     
-    # Make sure our COLORS dictionary has all the necessary colors
-    # with appropriate defaults if they're not defined
+    # Always use dark theme colors
+    # Modern dark theme with green/teal accent colors
+    accent_primary = "#00BFA5"  # Teal accent
+    accent_secondary = "#4DB6AC"  # Lighter teal
+    accent_hover = "#009688"  # Deeper teal
     
-    # Core colors - should be already defined
-    if "bg" not in COLORS:
-        COLORS["bg"] = "#F5F5F5"  # Default background
-        
-    if "text" not in COLORS:
-        COLORS["text"] = "#333333"  # Default text color
-        
-    if "accent" not in COLORS:
-        COLORS["accent"] = "#007BFF"  # Default accent color (Blue)
-        
-    if "highlight" not in COLORS:
-        COLORS["highlight"] = "#F0F0F0"  # Default highlight color
+    background = "#1E1E1E"  # Dark background
+    card_bg = "#2D2D2D"  # Slightly lighter than background
+    surface = "#333333"  # Surface elements
     
-    # Additional colors for enhanced UI
-    COLORS.setdefault("light_text", "#777777")  # For secondary text
-    COLORS.setdefault("border", "#CCCCCC")      # For borders
-    COLORS.setdefault("input_bg", COLORS["highlight"])  # Input background
-    COLORS.setdefault("accent_hover", "#0069d9")  # Darker accent for hover
-    COLORS.setdefault("timer_text", COLORS["accent"])  # For timer text
-    COLORS.setdefault("success", "#28a745")     # Green for success messages
-    COLORS.setdefault("error", "#dc3545")       # Red for errors
-    COLORS.setdefault("warning", "#ffc107")     # Yellow for warnings
+    text_primary = "#E0F2F1"  # Very light teal for text
+    text_secondary = "#B2DFDB"  # Light teal text for secondary elements
+    text_disabled = "#80CBC4"  # Medium teal for disabled text
     
-    # Glass effect colors (using solid colors that mimic glass)
-    if current_theme == "dark":
-        COLORS.setdefault("glass_bg", "#3A3A3A")       # Dark glass-like background
-        COLORS.setdefault("glass_frame", "#333333")    # Darker frame
-        COLORS.setdefault("glass_highlight", "#444444") # Slightly lighter for highlights
-    else:
-        COLORS.setdefault("glass_bg", "#E8E8E8")       # Light glass-like background
-        COLORS.setdefault("glass_frame", "#D0D0D0")    # Slightly darker frame
-        COLORS.setdefault("glass_highlight", "#F0F0F0") # Slightly lighter for highlights
+    success = "#4CAF50"  # Green
+    error = "#FF5252"  # Red
+    warning = "#FFD740"  # Amber
+    info = "#26A69A"  # Teal for info
     
-    # Apply Sun Valley theme colors if available
+    separator = "#444444"  # Subtle separator
+    selection = "#00897B33"  # Selection with transparency
+    
+    glass_bg = "#263238"  # Dark teal-tinted background
+    glass_frame = "#212121"  # Very dark gray
+    glass_highlight = "#37474F"  # Slightly lighter for highlights
+    
+    # Set core colors
+    COLORS["background"] = background
+    COLORS["foreground"] = text_primary
+    COLORS["accent"] = accent_primary
+    COLORS["secondary_accent"] = accent_secondary
+    COLORS["accent_hover"] = accent_hover
+    
+    # Background variations
+    COLORS["card_bg"] = card_bg
+    COLORS["surface"] = surface
+    COLORS["glass_bg"] = glass_bg
+    COLORS["glass_frame"] = glass_frame
+    COLORS["glass_highlight"] = glass_highlight
+    
+    # Text variations
+    COLORS["text"] = text_primary  # Alias for foreground
+    COLORS["label"] = text_secondary
+    COLORS["inactive"] = text_disabled
+    COLORS["light_text"] = text_disabled
+    
+    # Button colors
+    COLORS["button_bg"] = accent_primary
+    COLORS["button_fg"] = "#FFFFFF"  # White text on buttons
+    COLORS["button_hover"] = accent_hover
+    
+    # Input colors
+    COLORS["input_bg"] = "#212121"
+    COLORS["input_fg"] = text_primary
+    COLORS["border"] = "#455A64"
+    
+    # Status colors
+    COLORS["success"] = success
+    COLORS["error"] = error
+    COLORS["warning"] = warning
+    COLORS["info"] = info
+    
+    # UI element colors
+    COLORS["separator"] = separator
+    COLORS["selection_bg"] = selection
+    COLORS["highlight"] = "#37474F"
+    COLORS["shadow"] = "#00000077"
+    
+    # Aliases for backward compatibility
+    COLORS["bg"] = background
+    COLORS["secondary"] = text_secondary
+    COLORS["card_shadow"] = COLORS["shadow"]
+    
+    # Apply Sun Valley theme-specific adjustments if available
     try:
         if sv_ttk:
-            if current_theme == "dark":
-                COLORS["glass_bg"] = "#2C2C2C"
-                COLORS["glass_frame"] = "#252525"
-                COLORS["glass_highlight"] = "#353535"
-            else:
-                COLORS["glass_bg"] = "#E8ECF0"
-                COLORS["glass_frame"] = "#DBE0E6"
-                COLORS["glass_highlight"] = "#F0F4F8"
+            # Refine colors to better match Sun Valley dark theme
+            COLORS["glass_bg"] = "#263238"
+            COLORS["glass_frame"] = "#212121"
+            COLORS["glass_highlight"] = "#37474F"
+            COLORS["input_bg"] = "#333333"
+            COLORS["button_hover"] = "#00897B"
+            COLORS["accent_hover"] = "#00897B"
     except:
         pass
     
@@ -168,15 +208,15 @@ def initialize_colors():
 
 
 def configure_styles():
-    """Configure the styles for the application with a modern glass-like appearance"""
+    """Configure the styles for the application with a modern glass-like appearance and enhanced colors"""
     try:
         style = ttk.Style()
         
-        # Apply Sun Valley theme if available
+        # Always apply Sun Valley dark theme
         try:
-            if sv_ttk:
-                sv_ttk.set_theme("light" if current_theme == "light" else "dark")
-        except:
+            sv_ttk.set_theme("dark")
+        except Exception as e:
+            print(f"Could not apply Sun Valley theme: {e}")
             style.theme_use('clam')  # Fallback to clam theme
         
         # Ensure we have all necessary colors in the COLORS dictionary
@@ -190,211 +230,220 @@ def configure_styles():
         
         style.configure(
             "TLabel", 
-            background=COLORS["bg"], 
-            foreground=COLORS["text"],
+            background=COLORS["background"], 
+            foreground=COLORS["foreground"],
             font=("Segoe UI", 10)
         )
         
         style.configure(
             "Glass.TLabel",
             background=COLORS["glass_bg"], 
-            foreground=COLORS["text"],
+            foreground=COLORS["foreground"],
             font=("Segoe UI", 10)
-        )
-        
-        style.configure(
-            "Header.TLabel",
-            font=("Segoe UI", 16, "bold"),
-            foreground=COLORS["text"],
-            background=COLORS["bg"]
         )
         
         style.configure(
             "Glass.Header.TLabel",
-            font=("Segoe UI", 16, "bold"),
-            foreground=COLORS["text"],
-            background=COLORS["glass_bg"]
-        )
-        
-        style.configure(
-            "Subheader.TLabel",
-            font=("Segoe UI", 12),
-            foreground=COLORS["text"],
-            background=COLORS["bg"]
+            background=COLORS["glass_bg"], 
+            foreground=COLORS["foreground"],
+            font=("Segoe UI", 18, "bold")
         )
         
         style.configure(
             "Glass.Subheader.TLabel",
-            font=("Segoe UI", 12),
-            foreground=COLORS["text"],
-            background=COLORS["glass_bg"]
+            background=COLORS["glass_bg"], 
+            foreground=COLORS["foreground"],
+            font=("Segoe UI", 14, "bold")
         )
         
-        # Configure modern button styles with glass effect
+        style.configure(
+            "Glass.Footer.TLabel",
+            background=COLORS["glass_bg"], 
+            foreground=COLORS["light_text"],
+            font=("Segoe UI", 9)
+        )
+        
+        # Improved button styles with better contrast
         style.configure(
             "Glass.TButton",
-            background=COLORS["glass_highlight"],
-            foreground=COLORS["text"],
-            padding=(10, 5),
-            font=("Segoe UI", 10),
-            relief="flat",
-            borderwidth=0
-        )
-        
-        style.map(
-            "Glass.TButton",
-            background=[("active", COLORS.get("accent_hover", "#0069d9"))],
-            foreground=[("active", "#FFFFFF")]
-        )
-        
-        # Configure entry styles with glass effect
-        style.configure(
-            "Glass.TEntry",
-            fieldbackground=COLORS["glass_highlight"],
-            foreground=COLORS["text"],
-            padding=5,
-            relief="flat",
-            borderwidth=0
-        )
-        
-        # Configure checkbutton style with glass effect
-        style.configure(
-            "Glass.TCheckbutton",
-            background=COLORS["glass_bg"],
-            foreground=COLORS["text"],
-            font=("Segoe UI", 10)
-        )
-        
-        # Configure radiobutton style with glass effect
-        style.configure(
-            "Glass.TRadiobutton",
-            background=COLORS["glass_bg"],
-            foreground=COLORS["text"],
-            font=("Segoe UI", 10)
-        )
-        
-        # Special style for timer display with glass effect
-        style.configure(
-            "Glass.Timer.TLabel",
-            font=("Consolas", 14, "bold"),
-            foreground=COLORS.get("timer_text", COLORS["accent"]),
-            background=COLORS["glass_bg"],
-            padding=10
-        )
-        
-        # Configure scrollbar style with glass effect
-        style.configure(
-            "Glass.Vertical.TScrollbar",
-            background=COLORS["glass_highlight"],
-            troughcolor=COLORS["glass_bg"],
-            borderwidth=0,
-            arrowsize=14
-        )
-        
-        # Configure treeview style with glass effect
-        style.configure(
-            "Glass.Treeview",
-            background=COLORS["glass_highlight"],
-            foreground=COLORS["text"],
-            fieldbackground=COLORS["glass_highlight"],
-            font=("Segoe UI", 9),
-            rowheight=25
-        )
-        
-        style.configure(
-            "Glass.Treeview.Heading",
-            font=("Segoe UI", 10, "bold"),
-            background=COLORS["glass_highlight"],
-            foreground=COLORS["text"]
-        )
-        
-        # Add hover effect for treeview items
-        style.map(
-            "Glass.Treeview",
-            background=[("selected", COLORS["accent"])],
-            foreground=[("selected", "white")]
-        )
-        
-        # Regular styles for backward compatibility
-        style.configure(
-            "TFrame", 
-            background=COLORS["bg"]
-        )
-        
-        style.configure(
-            "TButton",
             background=COLORS["accent"],
-            foreground="white",
+            foreground="#FFFFFF",  # Always white for better readability
+            font=("Segoe UI", 10, "bold"),
             padding=(10, 5),
-            font=("Segoe UI", 10),
-            relief="flat"
+            borderwidth=1,
+            focusthickness=0
         )
         
         style.map(
-            "TButton",
-            background=[("active", COLORS.get("accent_hover", "#0069d9"))],
-            foreground=[("active", "white")]
-        )
-        
-        style.configure(
-            "TEntry",
-            fieldbackground=COLORS.get("input_bg", COLORS["highlight"]),
-            foreground=COLORS["text"],
-            padding=5,
-            relief="solid",
-            borderwidth=1
+            "Glass.TButton",
+            background=[('active', COLORS["accent_hover"]), ('pressed', COLORS["accent_hover"])],
+            relief=[('pressed', 'sunken'), ('!pressed', 'raised')]
         )
         
         style.configure(
             "TCheckbutton",
-            background=COLORS["bg"],
-            foreground=COLORS["text"],
+            background=COLORS["background"],
+            foreground=COLORS["foreground"],
             font=("Segoe UI", 10)
         )
         
         style.configure(
-            "TRadiobutton",
-            background=COLORS["bg"],
-            foreground=COLORS["text"],
+            "Glass.TCheckbutton",
+            background=COLORS["glass_bg"],
+            foreground=COLORS["foreground"],
             font=("Segoe UI", 10)
         )
         
         style.configure(
-            "Timer.TLabel",
-            font=("Consolas", 14, "bold"),
-            foreground=COLORS.get("timer_text", COLORS["accent"]),
-            background=COLORS["bg"],
-            padding=10
-        )
-        
-        style.configure(
-            "TScrollbar",
-            background=COLORS["highlight"],
-            troughcolor=COLORS["bg"],
-            borderwidth=0,
-            arrowsize=14
-        )
-        
-        style.configure(
-            "Treeview",
-            background=COLORS.get("input_bg", COLORS["highlight"]),
-            foreground=COLORS["text"],
-            fieldbackground=COLORS.get("input_bg", COLORS["highlight"]),
-            font=("Segoe UI", 9),
-            rowheight=25
-        )
-        
-        style.configure(
-            "Treeview.Heading",
-            font=("Segoe UI", 10, "bold"),
-            background=COLORS["highlight"],
-            foreground=COLORS["text"]
+            "Vertical.TScrollbar",
+            background=COLORS["glass_bg"],
+            arrowcolor=COLORS["foreground"],
+            bordercolor=COLORS["glass_bg"],
+            troughcolor=COLORS["glass_bg"],
+            gripcount=0
         )
         
         style.map(
-            "Treeview",
-            background=[("selected", COLORS["accent"])],
-            foreground=[("selected", "white")]
+            "Vertical.TScrollbar",
+            background=[('active', COLORS["accent_hover"]), ('pressed', COLORS["accent"])],
+            troughcolor=[('!active', COLORS["glass_bg"])]
+        )
+
+        # Card style with shadow effect
+        style.configure(
+            "Card.TFrame",
+            background=COLORS["card_bg"],
+            borderwidth=0,
+            relief="flat",
+            padding=15
+        )
+        
+        # Modern rounded button style with high contrast
+        style.configure(
+            "Rounded.TButton",
+            background=COLORS["accent"],
+            foreground="#FFFFFF",  # Always white text
+            borderwidth=1,
+            focusthickness=0,
+            padding=(15, 8),
+            font=("Segoe UI", 10, "bold")
+        )
+        
+        style.map(
+            "Rounded.TButton",
+            background=[('active', COLORS["accent_hover"]), ('pressed', COLORS["accent_hover"])],
+            relief=[('pressed', 'sunken'), ('!pressed', 'raised')]
+        )
+        
+        # Primary action button with high contrast
+        style.configure(
+            "Action.TButton",
+            background=COLORS["accent"],
+            foreground="#FFFFFF",  # Always white text
+            borderwidth=1,
+            focusthickness=0,
+            padding=(15, 8),
+            font=("Segoe UI", 11, "bold")
+        )
+        
+        style.map(
+            "Action.TButton",
+            background=[('active', COLORS["accent_hover"]), ('pressed', COLORS["accent_hover"])],
+            relief=[('pressed', 'sunken'), ('!pressed', 'raised')]
+        )
+        
+        # Secondary/ghost button
+        style.configure(
+            "Ghost.TButton",
+            background=COLORS["glass_bg"],
+            foreground=COLORS["foreground"],
+            borderwidth=1,
+            bordercolor=COLORS["border"],
+            focusthickness=0,
+            padding=(10, 5),
+            font=("Segoe UI", 10)
+        )
+        
+        style.map(
+            "Ghost.TButton",
+            background=[('active', COLORS["selection_bg"]), ('pressed', COLORS["selection_bg"])],
+            foreground=[('active', COLORS["accent"]), ('pressed', COLORS["accent"])],
+            relief=[('pressed', 'flat'), ('!pressed', 'flat')]
+        )
+        
+        # Success button
+        style.configure(
+            "Success.TButton",
+            background=COLORS["success"],
+            foreground=COLORS["button_fg"],
+            borderwidth=0,
+            focusthickness=0,
+            padding=(15, 8),
+            font=("Segoe UI", 10, "bold")
+        )
+        
+        style.map(
+            "Success.TButton",
+            background=[('active', '#3D9140'), ('pressed', '#3D9140')],
+            relief=[('pressed', 'flat'), ('!pressed', 'flat')]
+        )
+        
+        # Warning button
+        style.configure(
+            "Warning.TButton",
+            background=COLORS["warning"],
+            foreground="#333333",
+            borderwidth=0,
+            focusthickness=0,
+            padding=(15, 8),
+            font=("Segoe UI", 10, "bold")
+        )
+        
+        style.map(
+            "Warning.TButton",
+            background=[('active', '#E59400'), ('pressed', '#E59400')],
+            relief=[('pressed', 'flat'), ('!pressed', 'flat')]
+        )
+        
+        # Danger button
+        style.configure(
+            "Danger.TButton",
+            background=COLORS["error"],
+            foreground=COLORS["button_fg"],
+            borderwidth=0,
+            focusthickness=0,
+            padding=(15, 8),
+            font=("Segoe UI", 10, "bold")
+        )
+        
+        style.map(
+            "Danger.TButton",
+            background=[('active', '#D32F2F'), ('pressed', '#D32F2F')],
+            relief=[('pressed', 'flat'), ('!pressed', 'flat')]
+        )
+        
+        # Notebook/tab styling
+        style.configure(
+            "TNotebook",
+            background=COLORS["background"],
+            borderwidth=0,
+            tabmargins=[0, 0, 0, 0],
+            tabposition="n"
+        )
+        
+        style.configure(
+            "TNotebook.Tab",
+            background=COLORS["glass_bg"],
+            foreground=COLORS["foreground"],
+            padding=[15, 5],
+            font=("Segoe UI", 10)
+        )
+        
+        style.map(
+            "TNotebook.Tab",
+            background=[('selected', COLORS["accent"]), ('active', COLORS["selection_bg"])],
+            foreground=[('selected', "white"), ('active', COLORS["accent"])],
+            expand=[('selected', [1, 1, 1, 0])]
         )
         
         return style
@@ -406,10 +455,21 @@ def configure_styles():
 
 def create_ui():
     """Create the application UI elements with modern glass effect and scrollability"""
-    global app_icon, root, key_lock_btn, mouse_lock_btn, key_block_on_min, window_transparency_var, status_var, footer, shortcut
+    global app_icon, root, key_lock_btn, mouse_lock_btn, key_block_on_min, window_transparency_var, status_var, footer, shortcut, main_content
     
     # Configure all styles
     configure_styles()
+    
+    # Set window properties
+    root.geometry("850x650")
+    root.minsize(750, 550)
+    center_window(root)
+    
+    # Set window transparency if supported
+    apply_transparency(85)
+    
+    # Set dark background for root window
+    root.configure(bg=COLORS["background"])
     
     # Create main container as a notebook with tabs
     main_frame = ttk.Notebook(root)
@@ -455,18 +515,29 @@ def create_ui():
     main_content.columnconfigure(0, weight=1)
     
     # Add the main_tab to the notebook
-    main_frame.add(main_tab, text="Main")
+    main_frame.add(main_tab, text="Dashboard")
+    
+    # Add "Settings" and "Scheduler" tabs
+    settings_tab = ttk.Frame(main_frame, style="TFrame")
+    scheduler_tab = ttk.Frame(main_frame, style="TFrame")
+    
+    main_frame.add(settings_tab, text="Settings")
+    main_frame.add(scheduler_tab, text="Scheduler")
+    
+    # Setup content in tabs
+    create_settings_section(settings_tab)
+    create_scheduler_section_enhanced(scheduler_tab)
     
     # Bind resize event to window
     root.bind("<Configure>", on_window_resize)
     
     # Title frame with glass effect
     title_frame = ttk.Frame(main_content, style="Glass.TFrame")
-    title_frame.grid(row=0, column=0, pady=(0, 10), sticky="ew")
+    title_frame.grid(row=0, column=0, pady=(0, 15), sticky="ew", padx=15)
     title_frame.columnconfigure(0, weight=1)
     
-    # Draw a custom app icon on canvas
-    icon_size = 32
+    # Draw a custom app icon on canvas with improved style
+    icon_size = 36
     icon_canvas = tk.Canvas(
         title_frame,
         width=icon_size,
@@ -475,13 +546,13 @@ def create_ui():
         highlightthickness=0
     )
     
-    # Draw a lock icon
+    # Draw a lock icon with improved appearance
     center_x = icon_size / 2
     center_y = icon_size / 2
     
     # Lock body
-    lock_width = 20
-    lock_height = 16
+    lock_width = 22
+    lock_height = 18
     lock_left = center_x - lock_width / 2
     lock_top = center_y - lock_height / 2 + 4
     lock_right = center_x + lock_width / 2
@@ -491,15 +562,15 @@ def create_ui():
     draw_rounded_rectangle(
         icon_canvas,
         lock_left, lock_top, lock_right, lock_bottom,
-        radius=3,
+        radius=4,
         outline=COLORS["text"],
         width=2,
         fill=COLORS["accent"]
     )
     
-    # Lock shackle
-    shackle_width = 12
-    shackle_height = 10
+    # Lock shackle with smoother arc
+    shackle_width = 14
+    shackle_height = 12
     shackle_left = center_x - shackle_width / 2
     shackle_bottom = lock_top
     shackle_right = center_x + shackle_width / 2
@@ -514,12 +585,22 @@ def create_ui():
         style="arc"
     )
     
+    # Add a slight highlight to give 3D effect
+    icon_canvas.create_arc(
+        shackle_left+1, shackle_top+1,
+        shackle_right-1, shackle_bottom + shackle_height/2-1,
+        start=0, extent=180,
+        outline=COLORS["accent_hover"],
+        width=1,
+        style="arc"
+    )
+    
     icon_canvas.grid(row=0, column=0, sticky="w", padx=5)
     
     # Store the canvas as app_icon
     app_icon = icon_canvas
     
-    # Application title
+    # Application title with improved styling
     title_label = ttk.Label(
         title_frame, 
         text="KeyLock", 
@@ -539,12 +620,12 @@ def create_ui():
     )
     version_label.pack(side="left", padx=(0, 10))
     
-    # Button with a question mark icon
+    # Button with a question mark icon - improved styling
     help_button = ttk.Button(
         version_frame,
         text="?",
         width=2,
-        style="Glass.TButton",
+        style="Ghost.TButton",
         command=lambda: tk.messagebox.showinfo(
             "About KeyLock",
             "KeyLock is a utility for locking your keyboard and mouse.\n\n"
@@ -555,56 +636,64 @@ def create_ui():
     help_button.pack(side="right")
     
     # Modern card layout for main controls
-    control_card = ttk.Frame(main_content, style="Glass.TFrame", padding=15)
-    control_card.grid(row=1, column=0, pady=10, sticky="ew", padx=20)
+    control_card = ttk.Frame(main_content, style="Card.TFrame")
+    control_card.grid(row=1, column=0, pady=15, sticky="ew", padx=20)
     control_card.columnconfigure(0, weight=1)
     control_card.columnconfigure(1, weight=1)
+    control_card.columnconfigure(2, weight=1)
     
-    # Card header
-    card_header = ttk.Label(
-        control_card,
+    # Add shadow effect to card
+    if current_theme == "light":
+        control_card.configure(padding=(15, 15, 15, 20))  # Extra padding at bottom for shadow
+    
+    # Card header with icon
+    header_frame = ttk.Frame(control_card, style="Card.TFrame")
+    header_frame.grid(row=0, column=0, columnspan=3, sticky="ew", pady=(0, 15))
+    
+    header_label = ttk.Label(
+        header_frame,
         text="Quick Controls",
         style="Glass.Subheader.TLabel",
         font=("Segoe UI", 14, "bold")
     )
-    card_header.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
+    header_label.pack(side="left")
     
-    # Button frame with hover effects
-    button_frame = ttk.Frame(control_card, style="Glass.TFrame")
-    button_frame.grid(row=1, column=0, columnspan=2, pady=10, sticky="ew")
+    # Button frame with improved visibility
+    button_frame = ttk.Frame(control_card, style="Card.TFrame")
+    button_frame.grid(row=1, column=0, columnspan=3, pady=5, sticky="ew")
     button_frame.columnconfigure(0, weight=1)
     button_frame.columnconfigure(1, weight=1)
     button_frame.columnconfigure(2, weight=1)
     
-    # Lock Keyboard button
+    # Lock Keyboard button - enhanced visibility
     key_lock_btn = ttk.Button(
         button_frame,
         text="Lock Keyboard",
         command=toggle_keyboard_lock,
-        style="Glass.TButton",
+        style="Rounded.TButton",
         width=15
     )
-    key_lock_btn.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+    key_lock_btn.grid(row=0, column=0, padx=8, pady=8, sticky="ew")
     
-    # Lock Mouse button
+    # Lock Mouse button - enhanced visibility
     mouse_lock_btn = ttk.Button(
         button_frame,
         text="Lock Mouse",
         command=toggle_mouse_lock,
-        style="Glass.TButton",
+        style="Rounded.TButton",
         width=15
     )
-    mouse_lock_btn.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+    mouse_lock_btn.grid(row=0, column=1, padx=8, pady=8, sticky="ew")
     
-    # Lock Both button
+    # Lock Both button - enhanced with primary action style
     both_lock_btn = ttk.Button(
         button_frame,
         text="Lock Both",
         command=safe_lock_both,
-        style="Glass.TButton",
+        style="Action.TButton",
         width=15
     )
-    both_lock_btn.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+    both_lock_btn.grid(row=0, column=2, padx=8, pady=8, sticky="ew")
     
     # Add tooltips for buttons
     tooltip_timer = None
@@ -1120,101 +1209,79 @@ def create_header_section(parent):
 
 
 def create_status_section(parent):
-    """Create the status section of the UI with glass effect and canvas-drawn indicators"""
-    global keyboard_status, mouse_status
+    """Create the status section with device indicators and modern UI"""
+    global keyboard_status, mouse_status, keyboard_img, mouse_img
     
-    try:
-        # Status frames with glass effect
-        status_frame = ttk.Frame(parent, style="Glass.TFrame", padding=10)
-        status_frame.grid(row=1, column=0, sticky="ew", padx=20)
-        
-        # Configure status frame for responsive design
-        status_frame.columnconfigure(0, weight=1)
-        status_frame.columnconfigure(1, weight=1)
-        
-        # Device status displays with glass effect
-        keyboard_status_frame = ttk.Frame(
-            status_frame, 
-            style="Glass.TFrame",
-            padding=10
-        )
-        keyboard_status_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
-        
-        mouse_status_frame = ttk.Frame(
-            status_frame, 
-            style="Glass.TFrame",
-            padding=10
-        )
-        mouse_status_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
-        
-        # Keyboard status with glass effect and canvas indicator
-        keyboard_label = ttk.Label(
-            keyboard_status_frame, 
-            text="Keyboard", 
-            style="Glass.Subheader.TLabel"
-        )
-        keyboard_label.pack(pady=(0, 5))
-        
-        # Create canvas for keyboard indicator
-        keyboard_canvas = tk.Canvas(
-            keyboard_status_frame,
-            width=60,
-            height=60,
-            bg=COLORS["glass_bg"],
-            highlightthickness=0
-        )
-        keyboard_canvas.pack(pady=5)
-        
-        # Draw keyboard indicator (initially unlocked)
-        draw_keyboard_indicator(keyboard_canvas, False)
-        
-        keyboard_status = ttk.Label(
-            keyboard_status_frame, 
-            text="Unlocked", 
-            style="Glass.TLabel",
-            width=15,
-            padding=5
-        )
-        keyboard_status.pack(pady=(5, 0))
-        
-        # Mouse status with glass effect and canvas indicator
-        mouse_label = ttk.Label(
-            mouse_status_frame, 
-            text="Mouse", 
-            style="Glass.Subheader.TLabel"
-        )
-        mouse_label.pack(pady=(0, 5))
-        
-        # Create canvas for mouse indicator
-        mouse_canvas = tk.Canvas(
-            mouse_status_frame,
-            width=60,
-            height=60,
-            bg=COLORS["glass_bg"],
-            highlightthickness=0
-        )
-        mouse_canvas.pack(pady=5)
-        
-        # Draw mouse indicator (initially unlocked)
-        draw_mouse_indicator(mouse_canvas, False)
-        
-        mouse_status = ttk.Label(
-            mouse_status_frame, 
-            text="Unlocked", 
-            style="Glass.TLabel",
-            width=15,
-            padding=5
-        )
-        mouse_status.pack(pady=(5, 0))
-        
-        # Store canvas references for later updates
-        parent.keyboard_canvas = keyboard_canvas
-        parent.mouse_canvas = mouse_canvas
-        
-        return status_frame
-    except Exception as e:
-        print(f"Error creating status section: {e}")
-        return None
+    # Device status card with improved styling
+    status_card = ttk.Frame(parent, style="Card.TFrame")
+    status_card.grid(row=2, column=0, pady=15, sticky="ew", padx=20)
+    status_card.columnconfigure(0, weight=1)
+    status_card.columnconfigure(1, weight=1)
+    
+    # Add shadow effect to card
+    if current_theme == "light":
+        status_card.configure(padding=(15, 15, 15, 20))  # Extra padding at bottom for shadow
+    
+    # Card header
+    header_frame = ttk.Frame(status_card, style="Card.TFrame")
+    header_frame.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 15))
+    
+    header_label = ttk.Label(
+        header_frame,
+        text="Device Status",
+        style="Glass.Subheader.TLabel",
+        font=("Segoe UI", 14, "bold")
+    )
+    header_label.pack(side="left")
+    
+    # Create a frame for each device with improved layout
+    keyboard_frame = ttk.Frame(status_card, style="Card.TFrame", padding=10)
+    keyboard_frame.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
+    
+    mouse_frame = ttk.Frame(status_card, style="Card.TFrame", padding=10)
+    mouse_frame.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
+    
+    # Keyboard status with canvas-based indicator
+    keyboard_header = ttk.Label(
+        keyboard_frame, 
+        text="Keyboard", 
+        style="Glass.TLabel", 
+        font=("Segoe UI", 12, "bold"),
+        foreground=COLORS.get("foreground", "#0D47A1")  # Use foreground with fallback
+    )
+    keyboard_header.pack(anchor="w", pady=(0, 5))
+    
+    keyboard_canvas = tk.Canvas(keyboard_frame, width=120, height=80, bg=COLORS["card_bg"], highlightthickness=0)
+    keyboard_canvas.pack(fill="both", expand=True)
+    
+    # Draw keyboard indicator
+    draw_keyboard_indicator(keyboard_canvas, locked=False)
+    keyboard_img = keyboard_canvas
+    
+    keyboard_status = ttk.Label(keyboard_frame, text="Unlocked", style="Glass.TLabel", foreground=COLORS["success"])
+    keyboard_status.pack(pady=(5, 0))
+    
+    # Mouse status with canvas-based indicator
+    mouse_header = ttk.Label(
+        mouse_frame, 
+        text="Mouse", 
+        style="Glass.TLabel", 
+        font=("Segoe UI", 12, "bold"),
+        foreground=COLORS.get("foreground", "#0D47A1")  # Use foreground with fallback
+    )
+    mouse_header.pack(anchor="w", pady=(0, 5))
+    
+    mouse_canvas = tk.Canvas(mouse_frame, width=120, height=80, bg=COLORS["card_bg"], highlightthickness=0)
+    mouse_canvas.pack(fill="both", expand=True)
+    
+    # Draw mouse indicator
+    draw_mouse_indicator(mouse_canvas, locked=False)
+    mouse_img = mouse_canvas
+    
+    mouse_status = ttk.Label(mouse_frame, text="Unlocked", style="Glass.TLabel", foreground=COLORS["success"])
+    mouse_status.pack(pady=(5, 0))
+    
+    return status_card
 
 
 def draw_rounded_rectangle(canvas, x1, y1, x2, y2, radius=10, **kwargs):
@@ -1236,227 +1303,284 @@ def draw_rounded_rectangle(canvas, x1, y1, x2, y2, radius=10, **kwargs):
 
 
 def draw_keyboard_indicator(canvas, locked=False):
-    """Draw a keyboard indicator on the canvas"""
-    canvas.delete("all")  # Clear previous drawings
-    
-    # Draw keyboard outline
-    width, height = 60, 60
-    canvas_width, canvas_height = canvas.winfo_width() or width, canvas.winfo_height() or height
-    
-    # Adjust coordinates to center the drawing
-    center_x = canvas_width / 2
-    center_y = canvas_height / 2
-    
-    # Scale factors
-    scale_x = canvas_width / width
-    scale_y = canvas_height / height
-    scale = min(scale_x, scale_y)
-    
-    # Keyboard dimensions
-    kb_width = 40 * scale
-    kb_height = 25 * scale
-    
-    # Calculate position
-    left = center_x - kb_width / 2
-    top = center_y - kb_height / 2
-    right = center_x + kb_width / 2
-    bottom = center_y + kb_height / 2
-    
-    # Draw keyboard base
-    canvas.create_rectangle(
-        left, top, right, bottom,
-        outline=COLORS["text"],
-        width=2,
-        fill=COLORS["glass_highlight"] if not locked else COLORS["accent"]
-    )
-    
-    # Draw keys
-    key_size = 5 * scale
-    key_spacing = 1 * scale
-    key_rows = 3
-    keys_per_row = 5
-    
-    for row in range(key_rows):
-        for col in range(keys_per_row):
-            key_left = left + 3*scale + col * (key_size + key_spacing)
-            key_top = top + 3*scale + row * (key_size + key_spacing)
-            key_right = key_left + key_size
-            key_bottom = key_top + key_size
-            
-            canvas.create_rectangle(
-                key_left, key_top, key_right, key_bottom,
-                outline=COLORS["text"] if not locked else "white",
-                width=1,
-                fill=COLORS["glass_frame"] if not locked else COLORS["accent_hover"]
-            )
-    
-    # Draw lock icon if locked
-    if locked:
-        # Draw lock body
-        lock_width = 16 * scale
-        lock_height = 12 * scale
-        lock_left = center_x - lock_width / 2
-        lock_top = bottom + 5 * scale
-        lock_right = center_x + lock_width / 2
-        lock_bottom = lock_top + lock_height
+    """Draw a keyboard indicator on a canvas"""
+    try:
+        # Clear existing items
+        canvas.delete("all")
         
-        # Draw rounded rectangle for lock body
-        lock_radius = 3 * scale
+        width = int(canvas.cget("width"))
+        height = int(canvas.cget("height"))
+        
+        # Calculate dimensions for centered keyboard
+        kb_width = width * 0.8
+        kb_height = height * 0.6
+        key_spacing = kb_width / 12
+        
+        kb_left = (width - kb_width) / 2
+        kb_top = (height - kb_height) / 2
+        kb_right = kb_left + kb_width
+        kb_bottom = kb_top + kb_height
+        
+        # Draw keyboard base with rounded corners
         draw_rounded_rectangle(
             canvas,
-            lock_left, lock_top, lock_right, lock_bottom,
-            radius=lock_radius,
-            outline="white",
-            width=2,
-            fill=COLORS["error"]
+            kb_left, kb_top, kb_right, kb_bottom,
+            radius=5,
+            fill=COLORS["glass_highlight"] if not locked else "#263238",
+            outline=COLORS["foreground"],
+            width=2
         )
         
-        # Draw lock shackle
-        shackle_width = 10 * scale
-        shackle_height = 8 * scale
-        shackle_left = center_x - shackle_width / 2
-        shackle_bottom = lock_top
-        shackle_right = center_x + shackle_width / 2
-        shackle_top = shackle_bottom - shackle_height
+        # Draw keyboard keys
+        key_rows = [10, 12, 9]  # Number of keys in each row
+        key_height = kb_height / (len(key_rows) + 1)
         
-        canvas.create_arc(
-            shackle_left, shackle_top,
-            shackle_right, shackle_bottom + shackle_height/2,
-            start=0, extent=180,
-            outline="white",
-            width=2,
-            style="arc"
+        for row, num_keys in enumerate(key_rows):
+            key_width = (kb_width - ((num_keys + 1) * 2)) / num_keys
+            y_top = kb_top + (row + 0.5) * key_height
+            y_bottom = y_top + key_height * 0.7
+            
+            for key in range(num_keys):
+                x_left = kb_left + 2 + key * (key_width + 2)
+                x_right = x_left + key_width
+                
+                # Draw individual keys
+                draw_rounded_rectangle(
+                    canvas,
+                    x_left, y_top, x_right, y_bottom,
+                    radius=2,
+                    fill=COLORS["surface"] if not locked else "#455A64",
+                    outline=COLORS["foreground"],
+                    width=1
+                )
+        
+        # Draw space bar
+        space_width = kb_width * 0.5
+        space_left = kb_left + (kb_width - space_width) / 2
+        space_right = space_left + space_width
+        space_top = kb_top + 3.5 * key_height
+        space_bottom = space_top + key_height * 0.7
+        
+        draw_rounded_rectangle(
+            canvas,
+            space_left, space_top, space_right, space_bottom,
+            radius=2,
+            fill=COLORS["surface"] if not locked else "#455A64",
+            outline=COLORS["foreground"],
+            width=1
         )
-    else:
-        # Draw unlocked text
-        canvas.create_text(
-            center_x,
-            bottom + 10 * scale,
-            text="✓",
-            fill=COLORS["success"],
-            font=("Segoe UI", int(14 * scale), "bold")
-        )
+        
+        # Draw lock indicator
+        indicator_size = 20
+        indicator_x = kb_right + 5
+        indicator_y = kb_top
+        
+        if locked:
+            # Draw locked indicator (closed padlock)
+            canvas.create_oval(
+                indicator_x - indicator_size/2, 
+                indicator_y - indicator_size/2,
+                indicator_x + indicator_size/2, 
+                indicator_y + indicator_size/2,
+                fill="#FF5252",
+                outline=COLORS["foreground"],
+                width=1
+            )
+            
+            # Draw lock symbol
+            icon_size = indicator_size * 0.6
+            canvas.create_rectangle(
+                indicator_x - icon_size/3,
+                indicator_y - icon_size/4,
+                indicator_x + icon_size/3,
+                indicator_y + icon_size/2,
+                fill="#FFFFFF",
+                outline=""
+            )
+            canvas.create_arc(
+                indicator_x - icon_size/2,
+                indicator_y - icon_size/2,
+                indicator_x + icon_size/2,
+                indicator_y,
+                start=0,
+                extent=180,
+                style="arc",
+                outline="#FFFFFF",
+                width=2
+            )
+            
+        else:
+            # Draw unlocked indicator (green circle)
+            canvas.create_oval(
+                indicator_x - indicator_size/2, 
+                indicator_y - indicator_size/2,
+                indicator_x + indicator_size/2, 
+                indicator_y + indicator_size/2,
+                fill="#4CAF50",
+                outline=COLORS["foreground"],
+                width=1
+            )
+            
+            # Draw unlock symbol (checkmark)
+            canvas.create_line(
+                indicator_x - indicator_size/3,
+                indicator_y,
+                indicator_x - indicator_size/9,
+                indicator_y + indicator_size/3,
+                indicator_x + indicator_size/3,
+                indicator_y - indicator_size/3,
+                fill="#FFFFFF",
+                width=2,
+                smooth=True,
+                capstyle="round",
+                joinstyle="round"
+            )
+            
+        return canvas
+        
+    except Exception as e:
+        print(f"Error drawing keyboard indicator: {e}")
+        return canvas
 
 
 def draw_mouse_indicator(canvas, locked=False):
-    """Draw a mouse indicator on the canvas"""
-    canvas.delete("all")  # Clear previous drawings
-    
-    # Draw mouse outline
-    width, height = 60, 60
-    canvas_width, canvas_height = canvas.winfo_width() or width, canvas.winfo_height() or height
-    
-    # Adjust coordinates to center the drawing
-    center_x = canvas_width / 2
-    center_y = canvas_height / 2
-    
-    # Scale factors
-    scale_x = canvas_width / width
-    scale_y = canvas_height / height
-    scale = min(scale_x, scale_y)
-    
-    # Mouse body dimensions
-    mouse_width = 24 * scale
-    mouse_height = 40 * scale
-    
-    # Calculate position
-    left = center_x - mouse_width / 2
-    top = center_y - mouse_height / 2
-    right = center_x + mouse_width / 2
-    bottom = center_y + mouse_height / 2
-    
-    # Draw mouse body
-    canvas.create_oval(
-        left, top, right, bottom,
-        outline=COLORS["text"],
-        width=2,
-        fill=COLORS["glass_highlight"] if not locked else COLORS["accent"]
-    )
-    
-    # Draw mouse buttons
-    button_width = mouse_width
-    button_height = mouse_height / 3
-    
-    # Draw dividing line between buttons
-    canvas.create_line(
-        center_x, top, center_x, top + button_height,
-        fill=COLORS["text"] if not locked else "white",
-        width=1
-    )
-    
-    # Draw scroll wheel
-    wheel_width = 6 * scale
-    wheel_height = 8 * scale
-    wheel_left = center_x - wheel_width / 2
-    wheel_top = top + button_height / 2 - wheel_height / 2
-    wheel_right = center_x + wheel_width / 2
-    wheel_bottom = top + button_height / 2 + wheel_height / 2
-    
-    canvas.create_rectangle(
-        wheel_left, wheel_top, wheel_right, wheel_bottom,
-        outline=COLORS["text"] if not locked else "white",
-        width=1,
-        fill=COLORS["glass_frame"] if not locked else COLORS["accent_hover"]
-    )
-    
-    # Draw mouse cord
-    cord_start_x = center_x
-    cord_start_y = top
-    cord_end_x = center_x
-    cord_end_y = top - 10 * scale
-    
-    canvas.create_line(
-        cord_start_x, cord_start_y, cord_end_x, cord_end_y,
-        fill=COLORS["text"],
-        width=2
-    )
-    
-    # Draw lock icon if locked
-    if locked:
-        # Draw lock body
-        lock_width = 16 * scale
-        lock_height = 12 * scale
-        lock_left = center_x - lock_width / 2
-        lock_top = bottom + 5 * scale
-        lock_right = center_x + lock_width / 2
-        lock_bottom = lock_top + lock_height
+    """Draw a mouse indicator on a canvas"""
+    try:
+        # Clear existing items
+        canvas.delete("all")
         
-        # Draw rounded rectangle for lock body
-        lock_radius = 3 * scale
+        width = int(canvas.cget("width"))
+        height = int(canvas.cget("height"))
+        
+        # Calculate dimensions for centered mouse
+        mouse_width = width * 0.4
+        mouse_height = height * 0.7
+        
+        mouse_left = (width - mouse_width) / 2
+        mouse_top = (height - mouse_height) / 2
+        mouse_right = mouse_left + mouse_width
+        mouse_bottom = mouse_top + mouse_height
+        
+        # Draw mouse body with rounded corners
         draw_rounded_rectangle(
             canvas,
-            lock_left, lock_top, lock_right, lock_bottom,
-            radius=lock_radius,
-            outline="white",
-            width=2,
-            fill=COLORS["error"]
+            mouse_left, mouse_top, mouse_right, mouse_bottom,
+            radius=mouse_width/2,
+            fill=COLORS["glass_highlight"] if not locked else "#263238",
+            outline=COLORS["foreground"],
+            width=2
         )
         
-        # Draw lock shackle
-        shackle_width = 10 * scale
-        shackle_height = 8 * scale
-        shackle_left = center_x - shackle_width / 2
-        shackle_bottom = lock_top
-        shackle_right = center_x + shackle_width / 2
-        shackle_top = shackle_bottom - shackle_height
+        # Draw mouse wheel
+        wheel_width = mouse_width * 0.2
+        wheel_height = mouse_height * 0.15
+        wheel_left = mouse_left + (mouse_width - wheel_width) / 2
+        wheel_top = mouse_top + mouse_height * 0.3
+        wheel_right = wheel_left + wheel_width
+        wheel_bottom = wheel_top + wheel_height
         
-        canvas.create_arc(
-            shackle_left, shackle_top,
-            shackle_right, shackle_bottom + shackle_height/2,
-            start=0, extent=180,
-            outline="white",
-            width=2,
-            style="arc"
+        canvas.create_rectangle(
+            wheel_left, wheel_top, wheel_right, wheel_bottom,
+            fill=COLORS["surface"] if not locked else "#455A64",
+            outline=COLORS["foreground"],
+            width=1
         )
-    else:
-        # Draw unlocked text
-        canvas.create_text(
-            center_x,
-            bottom + 10 * scale,
-            text="✓",
-            fill=COLORS["success"],
-            font=("Segoe UI", int(14 * scale), "bold")
+        
+        # Draw mouse buttons
+        btn_height = mouse_height * 0.25
+        btn_top = mouse_top + mouse_height * 0.05
+        btn_bottom = btn_top + btn_height
+        btn_mid = mouse_left + mouse_width / 2
+        
+        # Left button
+        canvas.create_line(
+            btn_mid, btn_top, btn_mid, btn_bottom,
+            fill=COLORS["foreground"],
+            width=1
         )
+        
+        # Cable
+        cable_width = mouse_width * 0.2
+        cable_top = mouse_top - mouse_height * 0.1
+        
+        canvas.create_line(
+            mouse_left + mouse_width/2, cable_top,
+            mouse_left + mouse_width/2, mouse_top,
+            fill=COLORS["foreground"],
+            width=2
+        )
+        
+        # Draw lock indicator
+        indicator_size = 20
+        indicator_x = mouse_right + 5
+        indicator_y = mouse_top
+        
+        if locked:
+            # Draw locked indicator (red circle)
+            canvas.create_oval(
+                indicator_x - indicator_size/2, 
+                indicator_y - indicator_size/2,
+                indicator_x + indicator_size/2, 
+                indicator_y + indicator_size/2,
+                fill="#FF5252",
+                outline=COLORS["foreground"],
+                width=1
+            )
+            
+            # Draw lock symbol
+            icon_size = indicator_size * 0.6
+            canvas.create_rectangle(
+                indicator_x - icon_size/3,
+                indicator_y - icon_size/4,
+                indicator_x + icon_size/3,
+                indicator_y + icon_size/2,
+                fill="#FFFFFF",
+                outline=""
+            )
+            canvas.create_arc(
+                indicator_x - icon_size/2,
+                indicator_y - icon_size/2,
+                indicator_x + icon_size/2,
+                indicator_y,
+                start=0,
+                extent=180,
+                style="arc",
+                outline="#FFFFFF",
+                width=2
+            )
+            
+        else:
+            # Draw unlocked indicator (green circle)
+            canvas.create_oval(
+                indicator_x - indicator_size/2, 
+                indicator_y - indicator_size/2,
+                indicator_x + indicator_size/2, 
+                indicator_y + indicator_size/2,
+                fill="#4CAF50",
+                outline=COLORS["foreground"],
+                width=1
+            )
+            
+            # Draw unlock symbol (checkmark)
+            canvas.create_line(
+                indicator_x - indicator_size/3,
+                indicator_y,
+                indicator_x - indicator_size/9,
+                indicator_y + indicator_size/3,
+                indicator_x + indicator_size/3,
+                indicator_y - indicator_size/3,
+                fill="#FFFFFF",
+                width=2,
+                smooth=True,
+                capstyle="round",
+                joinstyle="round"
+            )
+            
+        return canvas
+        
+    except Exception as e:
+        print(f"Error drawing mouse indicator: {e}")
+        return canvas
 
 
 def update_keyboard():
@@ -1500,88 +1624,70 @@ def update_mouse():
 
 
 def create_buttons_section(parent):
-    """Create the buttons section of the UI"""
-    try:
-        # Buttons container
-        buttons_container = tk.Frame(parent, bg=COLORS["bg"], pady=10)
-        buttons_container.grid(row=2, column=0, sticky="ew", padx=20)
-        
-        # Configure for responsive design
-        buttons_container.columnconfigure(0, weight=1)
-        buttons_container.columnconfigure(1, weight=1)
-        buttons_container.rowconfigure(0, weight=1)
-        buttons_container.rowconfigure(1, weight=1)
-        
-        # Individual lock buttons in a row
-        lock_keyboard_btn = tk.Button(
-            buttons_container,
-            text="Lock Keyboard",
-            bg=COLORS["accent"],
-            fg="white",
-            relief="flat",
-            borderwidth=0,
-            pady=12,
-            padx=10,
-            cursor="hand2",
-            font=("Segoe UI", 10, "bold"),
-            activebackground="#0069d9",
-            activeforeground="white",
-            command=lambda: safe_lock_keyboard()
-        )
-        lock_keyboard_btn.grid(row=0, column=0, sticky="ew", padx=(0, 5), pady=(0, 5))
-        
-        lock_mouse_btn = tk.Button(
-            buttons_container,
-            text="Lock Mouse",
-            bg=COLORS["accent"],
-            fg="white",
-            relief="flat",
-            borderwidth=0,
-            pady=12,
-            padx=10,
-            cursor="hand2",
-            font=("Segoe UI", 10, "bold"),
-            activebackground="#0069d9",
-            activeforeground="white",
-            command=lambda: safe_lock_mouse()
-        )
-        lock_mouse_btn.grid(row=0, column=1, sticky="ew", padx=(5, 0), pady=(0, 5))
-        
-        # Lock both button - spans both columns
-        lock_both_btn = tk.Button(
-            buttons_container,
-            text="Lock Both",
-            bg="#dc3545", # Red for emphasis
-            fg="white",
-            relief="flat",
-            borderwidth=0,
-            pady=12,
-            cursor="hand2",
-            font=("Segoe UI", 11, "bold"),
-            activebackground="#c82333",
-            activeforeground="white",
-            command=lambda: safe_lock_both()
-        )
-        lock_both_btn.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(5, 0))
-        
-        # Add hover effect
-        def on_enter(e, button, orig_color, hover_color):
-            button['background'] = hover_color
-            
-        def on_leave(e, button, orig_color):
-            button['background'] = orig_color
-            
-        lock_keyboard_btn.bind("<Enter>", lambda e: on_enter(e, lock_keyboard_btn, COLORS["accent"], "#0069d9"))
-        lock_keyboard_btn.bind("<Leave>", lambda e: on_leave(e, lock_keyboard_btn, COLORS["accent"]))
-        
-        lock_mouse_btn.bind("<Enter>", lambda e: on_enter(e, lock_mouse_btn, COLORS["accent"], "#0069d9"))
-        lock_mouse_btn.bind("<Leave>", lambda e: on_leave(e, lock_mouse_btn, COLORS["accent"]))
-        
-        lock_both_btn.bind("<Enter>", lambda e: on_enter(e, lock_both_btn, "#dc3545", "#c82333"))
-        lock_both_btn.bind("<Leave>", lambda e: on_leave(e, lock_both_btn, "#dc3545"))
-        
-    except Exception as e:
-        print(f"Error creating buttons section: {e}")
+    """Create the buttons section with improved UI and visibility"""
+    global key_lock_btn, mouse_lock_btn
+    
+    # Modern card layout for main controls
+    control_card = ttk.Frame(parent, style="Card.TFrame")
+    control_card.grid(row=1, column=0, pady=15, sticky="ew", padx=20)
+    control_card.columnconfigure(0, weight=1)
+    control_card.columnconfigure(1, weight=1)
+    control_card.columnconfigure(2, weight=1)
+    
+    # Add shadow effect to card
+    if current_theme == "light":
+        control_card.configure(padding=(15, 15, 15, 20))  # Extra padding at bottom for shadow
+    
+    # Card header with icon
+    header_frame = ttk.Frame(control_card, style="Card.TFrame")
+    header_frame.grid(row=0, column=0, columnspan=3, sticky="ew", pady=(0, 15))
+    
+    header_label = ttk.Label(
+        header_frame,
+        text="Quick Controls",
+        style="Glass.Subheader.TLabel",
+        font=("Segoe UI", 14, "bold")
+    )
+    header_label.pack(side="left")
+    
+    # Button frame with improved visibility
+    button_frame = ttk.Frame(control_card, style="Card.TFrame")
+    button_frame.grid(row=1, column=0, columnspan=3, pady=5, sticky="ew")
+    button_frame.columnconfigure(0, weight=1)
+    button_frame.columnconfigure(1, weight=1)
+    button_frame.columnconfigure(2, weight=1)
+    
+    # Lock Keyboard button - enhanced visibility
+    key_lock_btn = ttk.Button(
+        button_frame,
+        text="Lock Keyboard",
+        command=toggle_keyboard_lock,
+        style="Rounded.TButton",
+        width=15
+    )
+    key_lock_btn.grid(row=0, column=0, padx=8, pady=8, sticky="ew")
+    
+    # Lock Mouse button - modernized
+    mouse_lock_btn = ttk.Button(
+        button_frame,
+        text="Lock Mouse",
+        command=toggle_mouse_lock,
+        style="Rounded.TButton",
+        width=15
+    )
+    mouse_lock_btn.grid(row=0, column=1, padx=8, pady=8, sticky="ew")
+    
+    # Lock Both button - modernized with primary action style
+    both_lock_btn = ttk.Button(
+        button_frame,
+        text="Lock Both",
+        command=safe_lock_both,
+        style="Action.TButton",
+        width=15
+    )
+    both_lock_btn.grid(row=0, column=2, padx=8, pady=8, sticky="ew")
+    
+    return control_card
 
 
 def create_settings_section(parent):
@@ -1755,40 +1861,44 @@ def debounce_shortcut_change():
 
 
 def apply_theme(selected_theme):
-    """Apply selected theme and show restart dialog"""
+    """Apply the dark theme regardless of selection"""
+    global current_theme, COLORS
+    
     try:
-        save_config(shortcut=shortcut.get(), theme=selected_theme)
+        # Always set dark theme
+        current_theme = "dark"
         
-        # Restart application message
-        restart_dialog = tk.Toplevel(root)
-        restart_dialog.title("Theme Changed")
-        restart_dialog.geometry("300x150")
-        restart_dialog.configure(bg=COLORS["bg"])
-        restart_dialog.transient(root)
-        restart_dialog.grab_set()
+        # Initialize enhanced colors
+        initialize_colors()
         
-        msg = tk.Label(
-            restart_dialog, 
-            text="Theme will be applied when you restart the application.", 
-            wraplength=250,
-            bg=COLORS["bg"],
-            fg=COLORS["text"],
-            pady=15
-        )
-        msg.pack(fill="both", expand=True)
+        # Apply Sun Valley theme (dark mode)
+        sv_ttk.set_theme("dark")
         
-        ok_btn = tk.Button(
-            restart_dialog, 
-            text="OK", 
-            bg=COLORS["accent"],
-            fg="white",
-            relief="flat",
-            borderwidth=0,
-            command=restart_dialog.destroy
-        )
-        ok_btn.pack(pady=10)
+        # Configure styles with new colors
+        configure_styles()
+        
+        # Update the colors for all widgets
+        for widget in root.winfo_children():
+            update_widget_themes(widget, current_theme)
+        
+        # Update config
+        save_config(theme=current_theme)
+        
     except Exception as e:
-        messagebox.showerror("Theme Error", f"Could not apply theme: {e}")
+        print(f"Error applying theme: {e}")
+
+
+def update_widget_themes(widget, theme):
+    """Recursively update theme for all widgets"""
+    try:
+        if hasattr(widget, 'update_theme'):
+            widget.update_theme(theme)
+            
+        for child in widget.winfo_children():
+            update_widget_themes(child, theme)
+            
+    except Exception as e:
+        print(f"Error updating widget theme: {e}")
 
 
 def safe_lock_keyboard():
@@ -3142,51 +3252,159 @@ def cleanup():
 
 
 def main():
-    """Main application entry point with error handling"""
+    """Main entry point of the application"""
+    global root, keyboard_status, mouse_status, config, shortcut, main_content
+    
     try:
-        # Initialize the application
+        # Initialize application
         if not initialize_app():
-            print("Failed to initialize application, exiting.")
-            return 1
+            return
         
         # Create the UI
-        if not create_ui():
-            print("Failed to create UI, exiting.")
-            return 1
+        create_ui()
         
-        # Register cleanup handler
-        root.protocol("WM_DELETE_WINDOW", lambda: (cleanup(), root.destroy()))
+        # Apply transparency based on settings
+        transparency_value = int(config.get("transparency", "85"))
+        apply_transparency(transparency_value)
         
-        # Start background threads and timers
-        threading.Thread(target=check_change, daemon=True).start()
+        # Create remaining UI sections
+        if main_content:
+            create_status_section(main_content)
+            
+            # Footer with credits
+            footer_frame = ttk.Frame(main_content, style="Glass.TFrame")
+            footer_frame.grid(row=99, column=0, sticky="ew", pady=(15, 5), padx=15)
+            
+            footer = ttk.Label(
+                footer_frame,
+                text="Press '" + shortcut.get() + "' to unlock",
+                style="Glass.Footer.TLabel"
+            )
+            footer.pack(side="left")
+            
+            version_text = ttk.Label(
+                footer_frame,
+                text="KeyLock v1.0",
+                style="Glass.Footer.TLabel"
+            )
+            version_text.pack(side="right")
+        
+        # Set up auto-lock based on config
+        if config.get("onstart_lock_keyboard", "false").lower() == "true":
+            safe_lock_keyboard()
+            
+        if config.get("onstart_lock_mouse", "false").lower() == "true":
+            safe_lock_mouse()
+        
+        # Set up scheduled checks
+        root.after(refresh_rate, check_change)
+        
+        # Update footer
         update_footer()
+        
+        # The ScheduleManager already loads schedules in its _scheduler_loop method
+        # We don't need to call load_schedules() explicitly
+        # schedule_manager.load_schedules()  # <- This caused the AttributeError
+        
+        # Center window and apply theme
+        center_window(root)
         
         # Start the main loop
         root.mainloop()
-        return 0
+        
     except Exception as e:
-        error_msg = f"Unhandled exception in main: {e}\n{traceback.format_exc()}"
+        error_msg = f"Error in main function: {e}\n{traceback.format_exc()}"
         print(error_msg)
         try:
-            messagebox.showerror("Fatal Error", f"An unrecoverable error occurred: {e}")
+            messagebox.showerror("Application Error", f"An error occurred: {e}")
         except:
             pass
-        return 1
+        return
 
 
 def apply_transparency(transparency_value):
-    """Apply transparency to the main window"""
+    """Apply transparency effect to the main window with blur if supported"""
     try:
-        # Clamp the value to valid range
-        transparency = max(100, min(255, transparency_value))
+        # Convert percentage to alpha value (0-1)
+        alpha = transparency_value / 100
         
-        # Convert to a float between 0.0 and 1.0 for wm_attributes
-        alpha = transparency / 255.0
-        
-        # Apply the transparency
-        root.wm_attributes("-alpha", alpha)
+        # Windows-specific transparency with blur
+        if os.name == "nt":
+            try:
+                from ctypes import windll, c_int, byref, sizeof
+                
+                # Try to apply acrylic/blur effect (Windows 10/11)
+                try:
+                    # Windows 10 1903+ supports Acrylic blur
+                    ACCENT_ENABLE_BLURBEHIND = 3
+                    ACCENT_ENABLE_ACRYLICBLURBEHIND = 4
+                    
+                    class ACCENTPOLICY(ctypes.Structure):
+                        _fields_ = [
+                            ("AccentState", ctypes.c_uint),
+                            ("AccentFlags", ctypes.c_uint),
+                            ("GradientColor", ctypes.c_uint),
+                            ("AnimationId", ctypes.c_uint)
+                        ]
+                    
+                    class WINDOWCOMPOSITIONATTRIBDATA(ctypes.Structure):
+                        _fields_ = [
+                            ("Attribute", ctypes.c_int),
+                            ("Data", ctypes.POINTER(ctypes.c_int)),
+                            ("SizeOfData", ctypes.c_size_t)
+                        ]
+                    
+                    # First try Acrylic blur (more modern)
+                    accent = ACCENTPOLICY()
+                    accent.AccentState = ACCENT_ENABLE_ACRYLICBLURBEHIND
+                    accent.GradientColor = (int(alpha * 255) << 24) | (0x990000 & 0xFFFFFF)  # AABBGGRR format
+                    
+                    data = WINDOWCOMPOSITIONATTRIBDATA()
+                    data.Attribute = 19  # WCA_ACCENT_POLICY
+                    data.SizeOfData = ctypes.sizeof(accent)
+                    data.Data = ctypes.cast(ctypes.pointer(accent), ctypes.POINTER(ctypes.c_int))
+                    
+                    SetWindowCompositionAttribute = windll.user32.SetWindowCompositionAttribute
+                    SetWindowCompositionAttribute.argtypes = [ctypes.c_int, ctypes.POINTER(WINDOWCOMPOSITIONATTRIBDATA)]
+                    SetWindowCompositionAttribute.restype = ctypes.c_int
+                    
+                    hwnd = windll.user32.GetParent(root.winfo_id())
+                    
+                    # Try acrylic first, fall back to regular blur if not supported
+                    if not SetWindowCompositionAttribute(hwnd, byref(data)):
+                        accent.AccentState = ACCENT_ENABLE_BLURBEHIND
+                        if not SetWindowCompositionAttribute(hwnd, byref(data)):
+                            # If both fail, use basic transparency
+                            root.attributes("-alpha", alpha)
+                    
+                except Exception as blur_error:
+                    print(f"Could not apply blur effect: {blur_error}")
+                    # Fall back to basic transparency
+                    root.attributes("-alpha", alpha)
+                
+            except Exception as e:
+                print(f"Error setting Windows transparency: {e}")
+                # Fallback to basic transparency
+                root.attributes("-alpha", alpha)
+                
+        # macOS transparency
+        elif sys.platform == "darwin":
+            try:
+                root.attributes("-alpha", alpha)
+                # macOS doesn't support window blur via Tkinter,
+                # but the alpha transparency looks nice with system styles
+            except Exception as e:
+                print(f"Error setting macOS transparency: {e}")
+                
+        # Linux transparency - may differ based on window manager
+        else:
+            try:
+                root.attributes("-alpha", alpha)
+            except Exception as e:
+                print(f"Error setting transparency: {e}")
+                
     except Exception as e:
-        print(f"Error applying transparency: {e}")
+        print(f"Could not apply transparency: {e}")
 
 
 if __name__ == "__main__":

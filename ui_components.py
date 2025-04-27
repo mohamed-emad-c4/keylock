@@ -3,6 +3,7 @@ from tkinter import ttk
 import platform
 from settings import get_theme_colors
 from functools import partial
+from indicators import draw_keyboard_indicator, draw_mouse_indicator
 
 class ThemedFrame(ttk.Frame):
     """A frame with theme support and responsive layout"""
@@ -642,4 +643,183 @@ def center_window(window, width=None, height=None):
     y = (screen_height - height) // 2
     
     # Set window position
-    window.geometry(f"{width}x{height}+{x}+{y}") 
+    window.geometry(f"{width}x{height}+{x}+{y}")
+
+def create_status_section(parent, colors):
+    """Create the status section with device indicators"""
+    # Create frame for status indicators
+    status_frame = ttk.LabelFrame(parent, text="Status", padding=10)
+    
+    # Create a frame for device indicators
+    indicators_frame = ttk.Frame(status_frame)
+    indicators_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+    
+    # Keyboard indicator
+    keyboard_frame = ttk.Frame(indicators_frame)
+    keyboard_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5)
+    
+    keyboard_header = ttk.Label(
+        keyboard_frame, 
+        text="Keyboard", 
+        font=("Segoe UI", 10, "bold"),
+        foreground=colors.get("foreground", "#0D47A1")
+    )
+    keyboard_header.pack(pady=(0, 5))
+    
+    keyboard_canvas = tk.Canvas(
+        keyboard_frame,
+        width=150,
+        height=100,
+        background=colors["background"],
+        highlightthickness=0
+    )
+    keyboard_canvas.pack(fill=tk.BOTH, expand=True)
+    draw_keyboard_indicator(keyboard_canvas, colors, locked=False)
+    
+    keyboard_status = ttk.Label(
+        keyboard_frame,
+        text="Unlocked",
+        foreground=colors.get("accent_positive", "#4CAF50")
+    )
+    keyboard_status.pack(pady=(5, 0))
+    
+    # Mouse indicator
+    mouse_frame = ttk.Frame(indicators_frame)
+    mouse_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5)
+    
+    mouse_header = ttk.Label(
+        mouse_frame, 
+        text="Mouse", 
+        font=("Segoe UI", 10, "bold"),
+        foreground=colors.get("foreground", "#0D47A1")
+    )
+    mouse_header.pack(pady=(0, 5))
+    
+    mouse_canvas = tk.Canvas(
+        mouse_frame,
+        width=150,
+        height=100,
+        background=colors["background"],
+        highlightthickness=0
+    )
+    mouse_canvas.pack(fill=tk.BOTH, expand=True)
+    draw_mouse_indicator(mouse_canvas, colors, locked=False)
+    
+    mouse_status = ttk.Label(
+        mouse_frame,
+        text="Unlocked",
+        foreground=colors.get("accent_positive", "#4CAF50")
+    )
+    mouse_status.pack(pady=(5, 0))
+    
+    return status_frame, keyboard_canvas, mouse_canvas, keyboard_status, mouse_status
+
+
+def create_buttons_section(parent, colors, lock_keyboard_callback, lock_mouse_callback):
+    """Create the Quick Controls section with buttons"""
+    # Create frame for control buttons
+    controls_frame = ttk.LabelFrame(parent, text="Quick Controls", padding=10)
+    
+    # Create button container
+    button_frame = ttk.Frame(controls_frame)
+    button_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+    
+    # Configure grid layout
+    button_frame.columnconfigure(0, weight=1)
+    button_frame.columnconfigure(1, weight=1)
+    button_frame.columnconfigure(2, weight=1)
+    
+    # Add keyboard control buttons
+    kb_label = ttk.Label(
+        button_frame, 
+        text="Keyboard", 
+        font=("Segoe UI", 10, "bold"),
+        foreground=colors.get("foreground", "#0D47A1")
+    )
+    kb_label.grid(row=0, column=0, pady=(0, 5), sticky="w")
+    
+    lock_kb_btn = ttk.Button(
+        button_frame,
+        text="Lock Keyboard",
+        command=lock_keyboard_callback,
+        style="AccentButton.TButton"
+    )
+    lock_kb_btn.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
+    
+    unlock_kb_btn = ttk.Button(
+        button_frame,
+        text="Unlock Keyboard",
+        command=lock_keyboard_callback
+    )
+    unlock_kb_btn.grid(row=2, column=0, padx=5, pady=5, sticky="ew")
+    
+    # Add mouse control buttons
+    mouse_label = ttk.Label(
+        button_frame, 
+        text="Mouse", 
+        font=("Segoe UI", 10, "bold"),
+        foreground=colors.get("foreground", "#0D47A1")
+    )
+    mouse_label.grid(row=0, column=1, pady=(0, 5), sticky="w")
+    
+    lock_mouse_btn = ttk.Button(
+        button_frame,
+        text="Lock Mouse",
+        command=lock_mouse_callback,
+        style="AccentButton.TButton"
+    )
+    lock_mouse_btn.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+    
+    unlock_mouse_btn = ttk.Button(
+        button_frame,
+        text="Unlock Mouse",
+        command=lock_mouse_callback
+    )
+    unlock_mouse_btn.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+    
+    # Add global controls
+    global_label = ttk.Label(
+        button_frame, 
+        text="Global", 
+        font=("Segoe UI", 10, "bold"),
+        foreground=colors.get("foreground", "#0D47A1")
+    )
+    global_label.grid(row=0, column=2, pady=(0, 5), sticky="w")
+    
+    lock_all_btn = ttk.Button(
+        button_frame,
+        text="Lock All Devices",
+        style="AccentButton.TButton"
+    )
+    lock_all_btn.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
+    
+    unlock_all_btn = ttk.Button(
+        button_frame,
+        text="Unlock All Devices"
+    )
+    unlock_all_btn.grid(row=2, column=2, padx=5, pady=5, sticky="ew")
+    
+    # Create a frame for toggle switches
+    toggle_frame = ttk.Frame(controls_frame)
+    toggle_frame.pack(fill=tk.X, padx=5, pady=(10, 5))
+    
+    # Add toggle switches
+    autostart_var = tk.BooleanVar(value=False)
+    autostart_check = ttk.Checkbutton(
+        toggle_frame,
+        text="Start with Windows",
+        variable=autostart_var,
+        style="Switch.TCheckbutton"
+    )
+    autostart_check.pack(side=tk.LEFT, padx=(0, 10))
+    
+    minimize_var = tk.BooleanVar(value=True)
+    minimize_check = ttk.Checkbutton(
+        toggle_frame,
+        text="Minimize to tray",
+        variable=minimize_var,
+        style="Switch.TCheckbutton"
+    )
+    minimize_check.pack(side=tk.LEFT)
+    
+    return controls_frame, lock_kb_btn, unlock_kb_btn, lock_mouse_btn, unlock_mouse_btn, lock_all_btn, unlock_all_btn 
