@@ -73,50 +73,156 @@
 2025-04-26 23:55:51,341 - keylock-scheduler - INFO - Scheduled Countdown (1 min) to run at 2025-04-26 23:56:51.341954
 2025-04-26 23:56:41,366 - keylock-scheduler - INFO - Scheduler loop ended
 2025-04-26 23:56:41,367 - keylock-scheduler - INFO - Scheduler stopped
-2025-04-26 23:58:13,773 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-26 23:58:13,773 - keylock-scheduler - INFO - Scheduler started
-2025-04-26 23:58:13,774 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-26 23:58:13,775 - keylock-scheduler - INFO - Scheduled Countdown (1 min) to run at 2025-04-26 23:59:13.775339
-2025-04-26 23:58:42,789 - keylock-scheduler - INFO - Scheduler loop ended
-2025-04-26 23:58:42,790 - keylock-scheduler - INFO - Scheduler stopped
-2025-04-27 05:51:59,868 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 05:51:59,868 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 05:51:59,882 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 05:51:59,883 - keylock-scheduler - INFO - Scheduled Countdown (1 min) to run at 2025-04-27 05:52:59.883303
-2025-04-27 05:52:59,891 - keylock-scheduler - INFO - Executing schedule: Countdown (1 min) (8c912ad9)
-2025-04-27 05:52:59,920 - keylock-core - INFO - Keyboard locked
-2025-04-27 05:52:59,945 - keylock-core - INFO - Shortcut listener started for: Ctrl+Alt+U
-2025-04-27 05:52:59,948 - keylock-scheduler - INFO - Schedules saved to file
-2025-04-27 05:57:27,373 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 05:57:27,374 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 05:57:27,375 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 05:59:25,287 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 05:59:25,287 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 05:59:25,287 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 06:29:49,454 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 06:29:49,455 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 06:29:49,455 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 06:34:31,995 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 06:34:31,995 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 06:34:31,996 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 06:37:05,858 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 06:37:05,858 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 06:37:05,859 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 06:38:29,748 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 06:38:29,749 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 06:38:29,749 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 06:50:28,386 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 06:50:28,386 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 06:50:28,387 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 07:05:38,469 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 07:05:38,469 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 07:05:38,470 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 07:08:05,467 - keylock-scheduler - INFO - Scheduler loop started
-2025-04-27 07:08:05,467 - keylock-scheduler - INFO - Scheduler started
-2025-04-27 07:08:05,468 - keylock-scheduler - INFO - Loaded 1 schedules from file
-2025-04-27 07:08:56,984 - keylock-scheduler - INFO - Scheduled Countdown (5 min) to run at 2025-04-27 07:13:56.983339
-2025-04-27 07:08:56,987 - keylock-scheduler - INFO - Schedules saved to file
-2025-04-27 07:08:56,987 - keylock-scheduler - INFO - Added schedule: Countdown (5 min) (25edfe87)
-2025-04-27 07:09:05,074 - keylock-scheduler - INFO - Scheduled Countdown (5 min) to run at 2025-04-27 07:14:05.073264
-2025-04-27 07:09:05,076 - keylock-scheduler - INFO - Schedules saved to file
-2025-04-27 07:09:05,077 - keylock-scheduler - INFO - Added schedule: Countdown (5 min) (f719be49)
+2025-04-27 08:06:18,148 - keylock-scheduler - INFO - Scheduler loop started
+2025-04-27 08:06:18,149 - keylock-scheduler - INFO - Scheduler started
+2025-04-27 08:06:18,149 - keylock-scheduler - INFO - Loaded 1 schedules from file
+2025-04-27 08:06:18,151 - keylock-scheduler - INFO - Scheduled Countdown (1 min) to run at 2025-04-27 08:07:18.150985
+2025-04-27 08:07:18,156 - keylock-scheduler - INFO - Executing schedule: Countdown (1 min) (8c912ad9)
+2025-04-27 08:07:18,181 - keylock-core - INFO - Keyboard locked
+2025-04-27 08:07:18,199 - keylock-core - INFO - Shortcut listener started for: Ctrl+Alt+U
+2025-04-27 08:07:18,201 - keylock-scheduler - INFO - Schedules saved to file
+2025-04-27 08:16:00,725 - keylock - INFO - KeyLock application starting
+2025-04-27 08:18:01,478 - keylock-scheduler - INFO - Scheduler loop ended
+2025-04-27 08:18:01,478 - keylock-scheduler - INFO - Scheduler stopped
+2025-04-27 08:18:26,016 - keylock-core - INFO - Keyboard locked
+2025-04-27 08:18:26,038 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-27 08:18:32,036 - keylock-core - INFO - Keyboard unlocked
+2025-04-27 08:18:34,771 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:36,956 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:37,832 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,015 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,225 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,410 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,591 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,773 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,973 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:39,150 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:39,369 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:46,613 - keylock-core - INFO - Keyboard locked
+2025-04-27 08:18:48,953 - keylock-core - INFO - Keyboard unlocked
+2025-04-27 08:24:59,826 - keylock - INFO - KeyLock application starting
+2025-04-27 08:26:34,493 - keylock - INFO - KeyLock application starting
+2025-04-27 08:31:29,745 - keylock - INFO - KeyLock application starting
+2025-04-27 08:31:33,272 - keylock-core - INFO - Keyboard locked
+2025-04-27 08:31:33,294 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-27 08:31:36,321 - keylock-core - INFO - Mouse locked
+2025-04-27 08:46:48,078 - keylock - INFO - KeyLock application starting
+2025-04-27 08:47:19,239 - keylock - INFO - KeyLock application starting
+2025-04-27 09:30:05,378 - keylock - INFO - KeyLock application starting
+2025-04-27 09:30:18,532 - keylock-core - INFO - Keyboard locked
+2025-04-27 09:30:18,538 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-27 09:30:18,538 - keylock-core - INFO - Mouse locked
+2025-04-27 09:35:19,804 - keylock-core - INFO - Keyboard unlocked
+2025-04-27 09:35:19,806 - keylock-core - INFO - Mouse unlocked
+2025-04-27 10:03:17,284 - keylock - INFO - KeyLock application starting
+2025-04-27 10:08:36,441 - keylock - INFO - KeyLock application starting
+2025-04-27 10:23:51,069 - keylock - INFO - KeyLock application starting
+2025-04-27 10:31:42,478 - keylock - INFO - KeyLock application starting
+2025-04-28 12:55:23,450 - keylock - INFO - KeyLock application starting
+2025-04-28 12:59:19,894 - keylock - INFO - KeyLock application starting
+2025-04-28 13:00:13,111 - keylock - INFO - KeyLock application starting
+2025-04-28 13:00:27,452 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:00:27,466 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:00:35,108 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:01:09,488 - keylock - INFO - KeyLock application starting
+2025-04-28 13:01:33,630 - keylock - INFO - KeyLock application starting
+2025-04-28 13:01:51,720 - keylock - INFO - KeyLock application starting
+2025-04-28 13:01:58,862 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:01:58,882 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:02:00,100 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:04:49,991 - keylock - INFO - KeyLock application starting
+2025-04-28 13:06:02,312 - keylock - INFO - KeyLock application starting
+2025-04-28 13:07:27,110 - keylock - INFO - KeyLock application starting
+2025-04-28 13:10:07,949 - keylock - INFO - KeyLock application starting
+2025-04-28 13:10:23,534 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:10:23,558 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:10:23,561 - keylock-core - INFO - Mouse locked
+2025-04-28 13:15:24,746 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:15:24,748 - keylock-core - INFO - Mouse unlocked
+2025-04-28 13:26:40,886 - keylock - INFO - KeyLock application starting
+2025-04-28 13:43:19,353 - keylock - INFO - KeyLock application starting
+2025-04-28 13:45:34,038 - keylock - INFO - KeyLock application starting
+2025-04-28 13:47:12,512 - keylock - INFO - KeyLock application starting
+2025-04-28 13:47:21,400 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:47:21,407 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:47:24,650 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:48:00,071 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:48:02,061 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:49:23,510 - keylock - INFO - KeyLock application starting
+2025-04-28 13:49:34,890 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:49:34,899 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:49:37,124 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 14:02:06,469 - keylock-core - INFO - Keyboard locked
+2025-04-28 14:02:13,000 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 14:02:14,257 - keylock-core - INFO - Shortcut pressed, unlocking all...
+2025-04-28 14:02:14,258 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 14:02:14,258 - keylock-core - INFO - Mouse unlocked
+2025-04-28 14:02:14,259 - keylock-core - INFO - Shortcut listener stopped
+2025-04-28 14:09:37,799 - keylock - INFO - KeyLock application starting
+2025-04-28 14:17:51,615 - keylock - INFO - KeyLock application starting

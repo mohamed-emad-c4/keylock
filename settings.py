@@ -74,35 +74,7 @@ config_template = """# KeyLock Configuration File
 &onstart_lock_keyboard@!@false
 &onstart_lock_mouse@!@false
 """
-
-# Default settings
-DEFAULT_SETTINGS = {
-    "theme": "light",
-    "start_with_windows": False,
-    "minimize_to_tray": True,
-    "lock_on_start": False
-}
-
-# Theme colors
-THEME_COLORS = {
-    "light": {
-        "background": "#FFFFFF",
-        "foreground": "#333333",
-        "accent": "#1976D2",
-        "accent_light": "#BBDEFB",
-        "accent_positive": "#4CAF50",
-        "accent_negative": "#F44336"
-    },
-    "dark": {
-        "background": "#121212",
-        "foreground": "#E0E0E0",
-        "accent": "#64B5F6",
-        "accent_light": "#0D47A1",
-        "accent_positive": "#66BB6A",
-        "accent_negative": "#E57373"
-    }
-}
-
+   
 def get_default_config():
     """Return the default configuration"""
     return {
