@@ -4,7 +4,7 @@
     "name": "Countdown (1 min)",
     "action": "keyboard",
     "time_type": "countdown",
-    "enabled": true,
+    "enabled": false,
     "start_time": 60
   }
 }

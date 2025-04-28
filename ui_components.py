@@ -3,92 +3,71 @@ from tkinter import ttk
 import platform
 from settings import get_theme_colors
 from functools import partial
+import math
 
-class ThemedFrame(ttk.Frame):
-    """A frame with theme support and responsive layout"""
-    def __init__(self, parent, theme="light", padding=(10, 10), **kwargs):
-        self.colors = get_theme_colors(theme)
-        
-        style = ttk.Style()
-        style_name = f"Themed.TFrame.{id(self)}"
-        style.configure(style_name, background=self.colors["background"])
-        
-        super().__init__(parent, style=style_name, padding=padding, **kwargs)
-        
-    def update_theme(self, theme):
-        """Update the frame's theme"""
-        self.colors = get_theme_colors(theme)
-        style = ttk.Style()
-        style_name = f"Themed.TFrame.{id(self)}"
-        style.configure(style_name, background=self.colors["background"])
+class ThemedFrame(tk.Frame):
+    """A themed frame that adapts to the current theme"""
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, **kwargs)
+        self.configure(borderwidth=0, highlightthickness=0)
 
-class ThemedButton(ttk.Button):
-    """Modern themed button with hover effects"""
-    def __init__(self, parent, text, command=None, theme="light", width=None, **kwargs):
-        self.colors = get_theme_colors(theme)
-        self.parent = parent
-        self.is_primary = kwargs.pop('primary', True)
+class ThemedButton(tk.Button):
+    """A themed button with hover effects"""
+    def __init__(self, parent, **kwargs):
+        # Extract colors or use defaults
+        bg_color = kwargs.pop('bg', '#0078D7')
+        fg_color = kwargs.pop('fg', 'white')
+        hover_bg = kwargs.pop('hover_bg', self._darken_color(bg_color, 0.1))
+        hover_fg = kwargs.pop('hover_fg', fg_color)
         
-        style = ttk.Style()
-        style_name = f"Themed.TButton.{id(self)}"
-        
-        # Primary vs Secondary button styling
-        if self.is_primary:
-            bg_color = self.colors["button_bg"]
-            fg_color = self.colors["button_fg"]
-            hover_color = self.colors["button_hover"]
-        else:
-            bg_color = self.colors["background"]
-            fg_color = self.colors["foreground"]
-            hover_color = self.colors["selection_bg"]
-            
-        style.configure(
-            style_name,
-            background=bg_color,
-            foreground=fg_color,
-            borderwidth=1,
-            focusthickness=3,
-            focuscolor=self.colors["accent"]
+        super().__init__(
+            parent,
+            bg=bg_color,
+            fg=fg_color,
+            relief="flat",
+            borderwidth=0,
+            highlightthickness=0,
+            font=("Segoe UI", 10),
+            cursor="hand2",
+            **kwargs
         )
         
-        # Configure hover style
-        style.map(
-            style_name,
-            background=[('active', hover_color)],
-            relief=[('pressed', 'sunken'), ('!pressed', 'raised')]
-        )
+        # Store colors for hover state
+        self._bg = bg_color
+        self._fg = fg_color
+        self._hover_bg = hover_bg
+        self._hover_fg = hover_fg
         
-        super().__init__(parent, text=text, command=command, style=style_name, width=width, **kwargs)
+        # Bind hover events
+        self.bind("<Enter>", self._on_enter)
+        self.bind("<Leave>", self._on_leave)
+    
+    def _on_enter(self, event):
+        """Change colors on hover"""
+        self.configure(bg=self._hover_bg, fg=self._hover_fg)
+    
+    def _on_leave(self, event):
+        """Restore original colors"""
+        self.configure(bg=self._bg, fg=self._fg)
+    
+    def _darken_color(self, hex_color, factor=0.1):
+        """Darken a hex color by a factor"""
+        # Convert hex to RGB
+        if hex_color.startswith('#'):
+            hex_color = hex_color[1:]
         
-    def update_theme(self, theme):
-        """Update the button's theme"""
-        self.colors = get_theme_colors(theme)
-        style = ttk.Style()
-        style_name = f"Themed.TButton.{id(self)}"
+        # Get RGB components
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
         
-        if self.is_primary:
-            bg_color = self.colors["button_bg"]
-            fg_color = self.colors["button_fg"]
-            hover_color = self.colors["button_hover"]
-        else:
-            bg_color = self.colors["background"]
-            fg_color = self.colors["foreground"]
-            hover_color = self.colors["selection_bg"]
-            
-        style.configure(
-            style_name,
-            background=bg_color,
-            foreground=fg_color,
-            borderwidth=1,
-            focusthickness=3,
-            focuscolor=self.colors["accent"]
-        )
+        # Darken
+        r = max(0, int(r * (1 - factor)))
+        g = max(0, int(g * (1 - factor)))
+        b = max(0, int(b * (1 - factor)))
         
-        style.map(
-            style_name,
-            background=[('active', hover_color)],
-            relief=[('pressed', 'sunken'), ('!pressed', 'raised')]
-        )
+        # Convert back to hex
+        return f"#{r:02x}{g:02x}{b:02x}"
 
 class ThemedLabel(ttk.Label):
     """Themed label with customizable styling"""
@@ -247,213 +226,267 @@ class ThemedCheckbutton(ttk.Checkbutton):
             indicatorcolor=[('selected', self.colors["accent"])]
         )
 
-class ResponsiveGrid(ttk.Frame):
-    """A grid container that automatically adjusts its layout based on width"""
-    def __init__(self, parent, columns=2, padding=10, min_column_width=200, **kwargs):
+class ResponsiveGrid(ThemedFrame):
+    """A responsive grid layout that adjusts to window size"""
+    
+    def __init__(self, parent, columns=2, padding=10, **kwargs):
         super().__init__(parent, **kwargs)
-        
         self.columns = columns
         self.padding = padding
-        self.min_column_width = min_column_width
         self.widgets = []
         
-        # Configure the single column to expand
-        self.columnconfigure(0, weight=1)
-        
-        # Bind to resize events
+        # Bind resize event
         self.bind("<Configure>", self._on_resize)
         
-    def add_widget(self, widget, sticky="ew", padx=5, pady=5):
-        """Add a widget to the responsive grid"""
+    def add_widget(self, widget, row, col, rowspan=1, colspan=1):
+        """Add a widget to the grid at the specified position"""
         self.widgets.append({
-            "widget": widget,
-            "sticky": sticky,
-            "padx": padx,
-            "pady": pady
+            'widget': widget,
+            'row': row,
+            'col': col,
+            'rowspan': rowspan,
+            'colspan': colspan
         })
-        self._reflow_layout()
+        
+        # Position the widget
+        self._position_widgets()
         
     def _on_resize(self, event):
-        """Handle resize events"""
-        self._reflow_layout()
+        """Reposition widgets when the grid is resized"""
+        self._position_widgets()
         
-    def _reflow_layout(self):
-        """Reflow the layout based on the current width"""
+    def _position_widgets(self):
+        """Position all widgets in the grid"""
         width = self.winfo_width()
-        
-        # Don't reflow if width is 1 (initial state)
-        if width <= 1:
+        if width <= 1:  # Not yet realized
             return
             
-        # Calculate how many columns can fit
-        available_cols = max(1, min(self.columns, width // self.min_column_width))
+        # Calculate cell dimensions
+        col_width = width / self.columns
         
-        # Remove all widgets first
-        for widget_info in self.widgets:
-            widget_info["widget"].grid_forget()
+        # Position each widget
+        for item in self.widgets:
+            widget = item['widget']
+            row = item['row']
+            col = item['col']
+            rowspan = item['rowspan']
+            colspan = item['colspan']
             
-        # Re-add widgets in the new layout
-        for i, widget_info in enumerate(self.widgets):
-            row = i // available_cols
-            col = i % available_cols
+            # Calculate widget dimensions
+            widget_width = col_width * colspan - self.padding * 2
             
-            # Configure column weight if needed
-            if col >= self.grid_size()[0]:
-                self.columnconfigure(col, weight=1)
-                
-            widget_info["widget"].grid(
-                row=row, 
-                column=col, 
-                sticky=widget_info["sticky"],
-                padx=widget_info["padx"],
-                pady=widget_info["pady"]
+            # Calculate position
+            x = col * col_width + self.padding
+            y = row * col_width + self.padding
+            
+            # Place the widget
+            widget.place(
+                x=x,
+                y=y,
+                width=widget_width,
+                height=col_width * rowspan - self.padding * 2
             )
 
-class Card(ttk.Frame):
-    """A card-like container with title and content sections"""
-    def __init__(self, parent, title=None, theme="light", padding=(15, 15), **kwargs):
-        self.colors = get_theme_colors(theme)
+class Card(ThemedFrame):
+    """A card widget with title and content area"""
+    def __init__(self, parent, title=None, **kwargs):
+        # Default styling for cards
+        bg_color = kwargs.pop('bg', '#FFFFFF')
+        border_color = kwargs.pop('border_color', '#E5E5E5')
+        title_color = kwargs.pop('title_color', '#333333')
         
-        # Configure card style
-        style = ttk.Style()
-        style_name = f"Card.TFrame.{id(self)}"
-        style.configure(
-            style_name,
-            background=self.colors["card_bg"],
-            relief="raised",
-            borderwidth=1
-        )
-        
-        super().__init__(parent, style=style_name, padding=padding, **kwargs)
-        
-        # Configure layout
-        self.columnconfigure(0, weight=1)
-        
-        # Add title if provided
-        self.title_label = None
-        row = 0
-        
-        if title:
-            # Title style
-            title_style_name = f"CardTitle.TLabel.{id(self)}"
-            style.configure(
-                title_style_name,
-                foreground=self.colors["foreground"],
-                background=self.colors["card_bg"],
-                font=("TkDefaultFont", 12, "bold")
-            )
-            
-            self.title_label = ttk.Label(self, text=title, style=title_style_name)
-            self.title_label.grid(row=row, column=0, sticky="w", pady=(0, 10))
-            row += 1
-            
-            # Add separator
-            separator_style = f"Card.TSeparator.{id(self)}"
-            style.configure(separator_style, background=self.colors["separator"])
-            
-            self.separator = ttk.Separator(self, orient="horizontal", style=separator_style)
-            self.separator.grid(row=row, column=0, sticky="ew", pady=(0, 15))
-            row += 1
-            
-        # Content frame
-        content_style = f"CardContent.TFrame.{id(self)}"
-        style.configure(content_style, background=self.colors["card_bg"])
-        
-        self.content = ttk.Frame(self, style=content_style)
-        self.content.grid(row=row, column=0, sticky="nsew")
-        self.content.columnconfigure(0, weight=1)
-        
-    def update_theme(self, theme):
-        """Update the card's theme"""
-        self.colors = get_theme_colors(theme)
-        
-        style = ttk.Style()
-        
-        # Update card style
-        style_name = f"Card.TFrame.{id(self)}"
-        style.configure(
-            style_name,
-            background=self.colors["card_bg"],
-            relief="raised",
-            borderwidth=1
-        )
-        
-        # Update title style if exists
-        if self.title_label:
-            title_style_name = f"CardTitle.TLabel.{id(self)}"
-            style.configure(
-                title_style_name,
-                foreground=self.colors["foreground"],
-                background=self.colors["card_bg"],
-                font=("TkDefaultFont", 12, "bold")
-            )
-            
-            # Update separator
-            separator_style = f"Card.TSeparator.{id(self)}"
-            style.configure(separator_style, background=self.colors["separator"])
-            
-        # Update content style
-        content_style = f"CardContent.TFrame.{id(self)}"
-        style.configure(content_style, background=self.colors["card_bg"])
-
-class Tooltip:
-    """Display a tooltip when hovering over a widget"""
-    def __init__(self, widget, text, theme="light", delay=500, wrap_length=200):
-        self.widget = widget
-        self.text = text
-        self.colors = get_theme_colors(theme)
-        self.delay = delay
-        self.wrap_length = wrap_length
-        self.tooltip_window = None
-        self.id = None
-        
-        self.widget.bind("<Enter>", self.schedule)
-        self.widget.bind("<Leave>", self.hide)
-        self.widget.bind("<ButtonPress>", self.hide)
-        
-    def schedule(self, event=None):
-        """Schedule the tooltip to appear after delay"""
-        self.hide()
-        self.id = self.widget.after(self.delay, self.show)
-        
-    def show(self):
-        """Show the tooltip"""
-        x, y, _, _ = self.widget.bbox("insert")
-        x += self.widget.winfo_rootx() + 25
-        y += self.widget.winfo_rooty() + 25
-        
-        # Create tooltip window
-        self.tooltip_window = tk.Toplevel(self.widget)
-        self.tooltip_window.wm_overrideredirect(True)
-        self.tooltip_window.wm_geometry(f"+{x}+{y}")
-        
-        # Create tooltip content
-        label = tk.Label(
-            self.tooltip_window, 
-            text=self.text, 
-            background=self.colors["card_bg"],
-            foreground=self.colors["foreground"],
-            wraplength=self.wrap_length,
-            justify="left",
+        super().__init__(parent, **kwargs)
+        self.configure(
+            bg=bg_color,
+            padx=15,
+            pady=15,
             relief="solid",
             borderwidth=1,
-            padx=5,
-            pady=5
+            highlightthickness=0
         )
-        label.pack()
         
-    def hide(self, event=None):
-        """Hide the tooltip"""
-        if self.id:
-            self.widget.after_cancel(self.id)
-            self.id = None
-        if self.tooltip_window:
-            self.tooltip_window.destroy()
-            self.tooltip_window = None
+        # Add title if provided
+        if title:
+            title_frame = ThemedFrame(self, bg=bg_color)
+            title_frame.pack(fill=tk.X, anchor="nw", pady=(0, 10))
             
-    def update_theme(self, theme):
-        """Update the tooltip's theme"""
-        self.colors = get_theme_colors(theme)
+            title_label = tk.Label(
+                title_frame,
+                text=title,
+                font=("Segoe UI", 12, "bold"),
+                bg=bg_color,
+                fg=title_color
+            )
+            title_label.pack(anchor="w")
+            
+            # Add separator
+            separator = ttk.Separator(self, orient="horizontal")
+            separator.pack(fill=tk.X, pady=(0, 10))
+        
+        # Content area
+        self.content_frame = ThemedFrame(self, bg=bg_color)
+        self.content_frame.pack(fill=tk.BOTH, expand=True)
+
+class CircularProgressBar(tk.Canvas):
+    """A circular progress bar widget"""
+    
+    def __init__(self, parent, **kwargs):
+        # Extract and remove custom parameters
+        self.size = kwargs.pop('size', 100)
+        self.progress = kwargs.pop('progress', 0)  # 0 to 100
+        self.width = kwargs.pop('width', 8)
+        self.background_color = kwargs.pop('bg_color', '#E0E0E0')
+        self.progress_color = kwargs.pop('progress_color', '#0078D7')
+        self.text_color = kwargs.pop('text_color', '#333333')
+        
+        # Initialize canvas
+        super().__init__(
+            parent,
+            width=self.size,
+            height=self.size,
+            highlightthickness=0,
+            **kwargs
+        )
+        
+        # Draw initial state
+        self.update_progress(self.progress)
+    
+    def update_progress(self, progress):
+        """Update the progress bar with new percentage"""
+        self.progress = progress
+        self.delete("all")
+        
+        # Calculate angles
+        angle = 360 * (progress / 100)
+        
+        # Draw background circle
+        self.create_oval(
+            self.width, self.width,
+            self.size - self.width, self.size - self.width,
+            outline=self.background_color,
+            width=self.width
+        )
+        
+        if progress > 0:
+            # Draw progress arc
+            self.create_arc(
+                self.width, self.width,
+                self.size - self.width, self.size - self.width,
+                start=90, extent=-angle,
+                style="arc",
+                outline=self.progress_color,
+                width=self.width
+            )
+        
+        # Draw text in center
+        self.create_text(
+            self.size / 2, self.size / 2,
+            text=f"{int(progress)}%",
+            font=("Segoe UI", int(self.size / 8), "bold"),
+            fill=self.text_color
+        )
+
+class ToggleSwitch(tk.Frame):
+    """A modern toggle switch widget"""
+    
+    def __init__(self, parent, **kwargs):
+        # Extract and remove custom parameters
+        self.width = kwargs.pop('width', 60)
+        self.height = kwargs.pop('height', 30)
+        self.on_color = kwargs.pop('on_color', '#0078D7')
+        self.off_color = kwargs.pop('off_color', '#CCCCCC')
+        self.on_text = kwargs.pop('on_text', 'ON')
+        self.off_text = kwargs.pop('off_text', 'OFF')
+        initial_state = kwargs.pop('state', False)
+        self.command = kwargs.pop('command', None)
+        
+        # Initialize frame
+        super().__init__(parent, **kwargs)
+        self.configure(width=self.width, height=self.height, bg=parent["bg"])
+        
+        # Create canvas for drawing the switch
+        self.canvas = tk.Canvas(
+            self,
+            width=self.width,
+            height=self.height,
+            bg=parent["bg"],
+            highlightthickness=0
+        )
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Bind events
+        self.canvas.bind("<Button-1>", self._toggle)
+        
+        # Set initial state
+        self.state = initial_state
+        self._draw_switch()
+    
+    def _toggle(self, event=None):
+        """Toggle the switch state"""
+        self.state = not self.state
+        self._draw_switch()
+        if self.command:
+            self.command(self.state)
+    
+    def _draw_switch(self):
+        """Draw the toggle switch on the canvas"""
+        self.canvas.delete("all")
+        
+        # Determine colors
+        bg_color = self.on_color if self.state else self.off_color
+        text = self.on_text if self.state else self.off_text
+        
+        # Draw the track
+        radius = self.height / 2
+        self.canvas.create_rounded_rect(
+            0, 0, self.width, self.height,
+            radius=radius, fill=bg_color
+        )
+        
+        # Draw the thumb
+        thumb_pos = self.width - self.height + 2 if self.state else 2
+        self.canvas.create_oval(
+            thumb_pos, 2,
+            thumb_pos + self.height - 4, self.height - 2,
+            fill="#FFFFFF"
+        )
+        
+        # Draw text
+        text_x = self.width - self.height / 2 - 10 if self.state else 15
+        self.canvas.create_text(
+            text_x, self.height / 2,
+            text=text,
+            fill="#FFFFFF",
+            font=("Segoe UI", 8, "bold")
+        )
+    
+    def get(self):
+        """Get the current state"""
+        return self.state
+    
+    def set(self, state):
+        """Set the state"""
+        if state != self.state:
+            self.state = state
+            self._draw_switch()
+
+# Extend Canvas to add methods for rounded rectangles
+tk.Canvas.create_rounded_rect = lambda self, x1, y1, x2, y2, radius=25, **kwargs: \
+    self.create_polygon(
+        x1 + radius, y1,
+        x2 - radius, y1,
+        x2, y1,
+        x2, y1 + radius,
+        x2, y2 - radius,
+        x2, y2,
+        x2 - radius, y2,
+        x1 + radius, y2,
+        x1, y2,
+        x1, y2 - radius,
+        x1, y1 + radius,
+        x1, y1,
+        smooth=True, **kwargs
+    )
 
 def setup_theme(root, theme="light"):
     """Setup the main application theme"""
@@ -573,6 +606,79 @@ class TabView(ttk.Notebook):
             foreground=[('selected', self.colors["accent"]), 
                         ('active', self.colors["foreground"])]
         )
+
+class CollapsibleCard(ThemedFrame):
+    """A collapsible card widget with a toggle header"""
+    def __init__(self, parent, title="", **kwargs):
+        # Extract and store specific parameters
+        self.bg_color = kwargs.get('bg', '#FFFFFF')
+        self.text_color = kwargs.get('fg', '#333333')
+        self.accent_color = kwargs.get('accent', '#0078D7')
+        self.expanded = kwargs.pop('expanded', True)
+        
+        super().__init__(parent, **kwargs)
+        self.configure(
+            relief="solid",
+            borderwidth=1,
+            highlightthickness=0
+        )
+        
+        # Create title frame/header
+        self.header_frame = ThemedFrame(self, bg=self.bg_color)
+        self.header_frame.pack(fill=tk.X, anchor="nw")
+        
+        # Toggle indicator (+ or -)
+        self.toggle_indicator = tk.Label(
+            self.header_frame,
+            text="▼" if self.expanded else "►",
+            font=("Segoe UI", 10),
+            bg=self.bg_color,
+            fg=self.accent_color
+        )
+        self.toggle_indicator.pack(side=tk.LEFT, padx=(10, 5), pady=10)
+        
+        # Title label
+        self.title_label = tk.Label(
+            self.header_frame,
+            text=title,
+            font=("Segoe UI", 12, "bold"),
+            bg=self.bg_color,
+            fg=self.text_color
+        )
+        self.title_label.pack(side=tk.LEFT, pady=10)
+        
+        # Make the header clickable
+        self.header_frame.bind("<Button-1>", self.toggle)
+        self.toggle_indicator.bind("<Button-1>", self.toggle)
+        self.title_label.bind("<Button-1>", self.toggle)
+        
+        # Content frame (holds the collapsible content)
+        self.content_frame = ThemedFrame(self, bg=self.bg_color)
+        if self.expanded:
+            self.content_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
+    
+    def toggle(self, event=None):
+        """Toggle the expanded/collapsed state"""
+        self.expanded = not self.expanded
+        
+        # Update the toggle indicator
+        self.toggle_indicator.config(text="▼" if self.expanded else "►")
+        
+        # Show or hide the content
+        if self.expanded:
+            self.content_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
+        else:
+            self.content_frame.pack_forget()
+            
+    def expand(self):
+        """Expand the card"""
+        if not self.expanded:
+            self.toggle()
+            
+    def collapse(self):
+        """Collapse the card"""
+        if self.expanded:
+            self.toggle()
 
 def create_window(title, theme="light", icon=None, resizable=(True, True), min_size=(400, 300)):
     """Create a themed tkinter window"""

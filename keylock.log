@@ -73,3 +73,126 @@
 2025-04-26 23:55:51,341 - keylock-scheduler - INFO - Scheduled Countdown (1 min) to run at 2025-04-26 23:56:51.341954
 2025-04-26 23:56:41,366 - keylock-scheduler - INFO - Scheduler loop ended
 2025-04-26 23:56:41,367 - keylock-scheduler - INFO - Scheduler stopped
+2025-04-27 08:06:18,148 - keylock-scheduler - INFO - Scheduler loop started
+2025-04-27 08:06:18,149 - keylock-scheduler - INFO - Scheduler started
+2025-04-27 08:06:18,149 - keylock-scheduler - INFO - Loaded 1 schedules from file
+2025-04-27 08:06:18,151 - keylock-scheduler - INFO - Scheduled Countdown (1 min) to run at 2025-04-27 08:07:18.150985
+2025-04-27 08:07:18,156 - keylock-scheduler - INFO - Executing schedule: Countdown (1 min) (8c912ad9)
+2025-04-27 08:07:18,181 - keylock-core - INFO - Keyboard locked
+2025-04-27 08:07:18,199 - keylock-core - INFO - Shortcut listener started for: Ctrl+Alt+U
+2025-04-27 08:07:18,201 - keylock-scheduler - INFO - Schedules saved to file
+2025-04-27 08:16:00,725 - keylock - INFO - KeyLock application starting
+2025-04-27 08:18:01,478 - keylock-scheduler - INFO - Scheduler loop ended
+2025-04-27 08:18:01,478 - keylock-scheduler - INFO - Scheduler stopped
+2025-04-27 08:18:26,016 - keylock-core - INFO - Keyboard locked
+2025-04-27 08:18:26,038 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-27 08:18:32,036 - keylock-core - INFO - Keyboard unlocked
+2025-04-27 08:18:34,771 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:36,956 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:37,832 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,015 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,225 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,410 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,591 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,773 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:38,973 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:39,150 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:39,369 - keylock-core - ERROR - Error in lock_mouse: name 'start_mouse' is not defined
+Traceback (most recent call last):
+  File "C:\Users\zemax\Desktop\projects\keylock\core.py", line 211, in lock_mouse
+    start_mouse()
+    ^^^^^^^^^^^
+NameError: name 'start_mouse' is not defined
+
+2025-04-27 08:18:46,613 - keylock-core - INFO - Keyboard locked
+2025-04-27 08:18:48,953 - keylock-core - INFO - Keyboard unlocked
+2025-04-27 08:24:59,826 - keylock - INFO - KeyLock application starting
+2025-04-27 08:26:34,493 - keylock - INFO - KeyLock application starting
+2025-04-27 08:31:29,745 - keylock - INFO - KeyLock application starting
+2025-04-27 08:31:33,272 - keylock-core - INFO - Keyboard locked
+2025-04-27 08:31:33,294 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-27 08:31:36,321 - keylock-core - INFO - Mouse locked
+2025-04-27 08:46:48,078 - keylock - INFO - KeyLock application starting
+2025-04-27 08:47:19,239 - keylock - INFO - KeyLock application starting
+2025-04-27 09:30:05,378 - keylock - INFO - KeyLock application starting
+2025-04-27 09:30:18,532 - keylock-core - INFO - Keyboard locked
+2025-04-27 09:30:18,538 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-27 09:30:18,538 - keylock-core - INFO - Mouse locked
+2025-04-27 09:35:19,804 - keylock-core - INFO - Keyboard unlocked
+2025-04-27 09:35:19,806 - keylock-core - INFO - Mouse unlocked
+2025-04-27 10:03:17,284 - keylock - INFO - KeyLock application starting
+2025-04-27 10:08:36,441 - keylock - INFO - KeyLock application starting
+2025-04-27 10:23:51,069 - keylock - INFO - KeyLock application starting
+2025-04-27 10:31:42,478 - keylock - INFO - KeyLock application starting
+2025-04-28 12:55:23,450 - keylock - INFO - KeyLock application starting
+2025-04-28 12:59:19,894 - keylock - INFO - KeyLock application starting
+2025-04-28 13:00:13,111 - keylock - INFO - KeyLock application starting
+2025-04-28 13:00:27,452 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:00:27,466 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:00:35,108 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:01:09,488 - keylock - INFO - KeyLock application starting
+2025-04-28 13:01:33,630 - keylock - INFO - KeyLock application starting
+2025-04-28 13:01:51,720 - keylock - INFO - KeyLock application starting
+2025-04-28 13:01:58,862 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:01:58,882 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:02:00,100 - keylock-core - INFO - Keyboard unlocked

@@ -318,14 +318,80 @@ def on_release(key):
         logger.error(f"Error in on_release: {e}")
 
 
-def get_status():
+def is_keyboard_locked():
     """
-    Get the current lock status
+    Check if keyboard is currently locked
     
     Returns:
-        dict: Dictionary with keyboard_locked and mouse_locked status
+        bool: True if keyboard is locked, False otherwise
     """
-    return {
-        "keyboard_locked": keyboard_locked,
-        "mouse_locked": mouse_locked
-    }
+    global keyboard_locked
+    return keyboard_locked
+
+
+def is_mouse_locked():
+    """
+    Check if mouse is currently locked
+    
+    Returns:
+        bool: True if mouse is locked, False otherwise
+    """
+    global mouse_locked
+    return mouse_locked
+
+
+def unlock_keyboard():
+    """
+    Unlock the keyboard
+    
+    Returns:
+        bool: True if keyboard was unlocked successfully, False otherwise
+    """
+    try:
+        if keyboard_locked:
+            stop_keyboard()
+        return True
+    except Exception as e:
+        logger.error(f"Error unlocking keyboard: {e}")
+        return False
+
+
+def unlock_mouse():
+    """
+    Unlock the mouse
+    
+    Returns:
+        bool: True if mouse was unlocked successfully, False otherwise
+    """
+    try:
+        if mouse_locked:
+            stop_mouse()
+        return True
+    except Exception as e:
+        logger.error(f"Error unlocking mouse: {e}")
+        return False
+
+
+def unlock_all():
+    """
+    Unlock both keyboard and mouse
+    
+    Returns:
+        bool: True if both were unlocked successfully, False otherwise
+    """
+    kb_result = unlock_keyboard()
+    mouse_result = unlock_mouse()
+    return kb_result and mouse_result
+
+
+def get_status():
+    """
+    Get the current status of keyboard and mouse
+    
+    Returns:
+        tuple: (keyboard_locked, mouse_locked, changed)
+    """
+    global keyboard_locked, mouse_locked, changed
+    was_changed = changed
+    changed = False
+    return keyboard_locked, mouse_locked, was_changed
