@@ -564,48 +564,6 @@ class KeylockDashboard:
         )
         apply_theme_btn.pack(side=tk.RIGHT)
         
-        # Transparency settings
-        transparency_frame = ThemedFrame(appearance_card.content_frame, bg=self.colors["card_bg"])
-        transparency_frame.pack(fill=tk.X, pady=10)
-        
-        tk.Label(
-            transparency_frame,
-            text="Window Opacity:",
-            font=("Segoe UI", 11),
-            bg=self.colors["card_bg"],
-            fg=self.colors["text"]
-        ).pack(side=tk.LEFT, padx=(0, 10))
-        
-        transparency_var = tk.IntVar(value=100)  # Default 100%
-        
-        transparency_scale = ttk.Scale(
-            transparency_frame,
-            from_=50,
-            to=100,
-            orient=tk.HORIZONTAL,
-            variable=transparency_var,
-            length=200
-        )
-        transparency_scale.pack(side=tk.LEFT, padx=(0, 10))
-        
-        transparency_label = tk.Label(
-            transparency_frame,
-            text="100%",
-            bg=self.colors["card_bg"],
-            fg=self.colors["text"]
-        )
-        transparency_label.pack(side=tk.LEFT)
-        
-        # Update transparency label when scale changes
-        def update_transparency_label(event=None):
-            value = transparency_var.get()
-            transparency_label.configure(text=f"{value}%")
-            # Placeholder for applying transparency
-            self.update_status(f"Opacity set to {value}%")
-        
-        transparency_scale.bind("<Motion>", update_transparency_label)
-        transparency_scale.bind("<ButtonRelease-1>", update_transparency_label)
-        
         # Behavior Section
         behavior_card = CollapsibleCard(
             settings_frame,
@@ -1039,33 +997,31 @@ class KeylockDashboard:
             
             # Help content
             help_content = """
-KeyLock is a powerful application that allows you to lock your keyboard and mouse.
+KeyLock is a simple, modern application that allows you to lock your keyboard and mouse for focus, safety, or convenience.
 
-Basic Usage:
-- Use the "Lock" buttons in the Dashboard to lock your keyboard or mouse
-- Use the "Lock All Devices" button to lock both at once
-- Use the hotkey (default: Ctrl+Q) to unlock devices at any time
+Main Features:
+- Lock your keyboard or mouse with a single click
+- Use the quick countdown timer to lock devices for a set period
+- Instantly unlock using your configured shortcut (default: Ctrl+Q)
+- Toggle between light and dark themes
+- Visual status indicators for locked/unlocked state
+- Configure theme, unlock shortcut, and startup behavior in the config file
 
-Timer Features:
-- Set a countdown timer to automatically lock your devices
-- Choose which devices to lock (keyboard, mouse, or both)
-- Set auto-unlock to automatically unlock when the timer expires
+Quick Start:
+1. Click 'Lock' next to Keyboard or Mouse to lock that device
+2. Use the 'Quick presets' or 'Start Countdown' to lock for a set time
+3. Unlock anytime using your shortcut (default: Ctrl+Q)
 
-Scheduler:
-- Schedule recurring device locks
-- Configure different lock types and durations
-- View upcoming scheduled locks in the Dashboard
+Configuration:
+- Edit the 'keylock.config' file to change theme, unlock shortcut, and more
 
-Settings:
-- Customize the app appearance
-- Configure hotkeys
-- Set password protection for unlocking
+Known Issues:
+- If you lock only the mouse and your unlock shortcut uses Ctrl, only a-z keys will work for unlocking
 
-For more help or to report bugs, visit:
-https://keylock.example.com/support
+For more help, updates, or to report bugs, visit:
+https://github.com/Axorax/keylock
 
-Version: 2.0
-"""
+Thank you for using KeyLock!"""
             help_text.insert(tk.END, help_content)
             help_text.config(state=tk.DISABLED)
             
