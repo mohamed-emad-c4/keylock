@@ -33,7 +33,7 @@
 ## 🖼️ Preview
 
 <p align="center">
-    <img src="./preview.png" width="45%" alt="KeyLock Dashboard Screenshot"/>
+    <img src="https://github.com/mohamed-emad-c4/keylock/blob/main/assets/preview.png?raw=true" width="45%" alt="KeyLock Dashboard Screenshot"/>
 </p>
 
 ---
