@@ -588,7 +588,7 @@ class TabView(ttk.Notebook):
             background=self.colors["background"],
             borderwidth=0
         )
-        
+           
         # Update tab style
         tab_style = f"{style_name}.Tab"
         style.configure(

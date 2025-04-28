@@ -10,7 +10,7 @@ logging.basicConfig(
     handlers=[
         logging.FileHandler("keylock.log"),
         logging.StreamHandler()
-    ]
+    ]  
 )
 logger = logging.getLogger("keylock-core")
 

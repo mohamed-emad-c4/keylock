@@ -16,7 +16,7 @@ def print_file_structure_info():
     print("  - dashboard.py   - Modern UI dashboard")
     print("  - core.py        - Core keyboard/mouse locking functionality")
     print("  - controller.py  - Input handling and hotkeys")
-    
+      
     # UI modules
     print("\nUI Modules:")
     print("  - ui_components.py - Reusable UI widgets")

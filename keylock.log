@@ -225,3 +225,4 @@ NameError: name 'start_mouse' is not defined
 2025-04-28 14:02:14,258 - keylock-core - INFO - Mouse unlocked
 2025-04-28 14:02:14,259 - keylock-core - INFO - Shortcut listener stopped
 2025-04-28 14:09:37,799 - keylock - INFO - KeyLock application starting
+2025-04-28 14:17:51,615 - keylock - INFO - KeyLock application starting

@@ -312,7 +312,7 @@ class KeylockDashboard:
         )
         kb_status.pack(side=tk.LEFT)
         self.kb_status_label = kb_status
-        
+          
         kb_toggle = ThemedButton(
             kb_frame,
             text="Lock",

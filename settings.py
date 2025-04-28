@@ -73,7 +73,7 @@ config_template = """# KeyLock Configuration File
 &onstart_lock_keyboard@!@false
 &onstart_lock_mouse@!@false
 """
-
+   
 def get_default_config():
     """Return the default configuration"""
     return {
