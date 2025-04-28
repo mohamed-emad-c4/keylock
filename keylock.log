@@ -196,3 +196,25 @@ NameError: name 'start_mouse' is not defined
 2025-04-28 13:01:58,862 - keylock-core - INFO - Keyboard locked
 2025-04-28 13:01:58,882 - keylock-core - INFO - Shortcut listener started for: ctrl+q
 2025-04-28 13:02:00,100 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:04:49,991 - keylock - INFO - KeyLock application starting
+2025-04-28 13:06:02,312 - keylock - INFO - KeyLock application starting
+2025-04-28 13:07:27,110 - keylock - INFO - KeyLock application starting
+2025-04-28 13:10:07,949 - keylock - INFO - KeyLock application starting
+2025-04-28 13:10:23,534 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:10:23,558 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:10:23,561 - keylock-core - INFO - Mouse locked
+2025-04-28 13:15:24,746 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:15:24,748 - keylock-core - INFO - Mouse unlocked
+2025-04-28 13:26:40,886 - keylock - INFO - KeyLock application starting
+2025-04-28 13:43:19,353 - keylock - INFO - KeyLock application starting
+2025-04-28 13:45:34,038 - keylock - INFO - KeyLock application starting
+2025-04-28 13:47:12,512 - keylock - INFO - KeyLock application starting
+2025-04-28 13:47:21,400 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:47:21,407 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:47:24,650 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:48:00,071 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:48:02,061 - keylock-core - INFO - Keyboard unlocked
+2025-04-28 13:49:23,510 - keylock - INFO - KeyLock application starting
+2025-04-28 13:49:34,890 - keylock-core - INFO - Keyboard locked
+2025-04-28 13:49:34,899 - keylock-core - INFO - Shortcut listener started for: ctrl+q
+2025-04-28 13:49:37,124 - keylock-core - INFO - Keyboard unlocked

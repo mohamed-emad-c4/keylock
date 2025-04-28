@@ -255,8 +255,23 @@ class KeylockDashboard:
         device_card = Card(cards_frame, title="Device Status", bg=self.colors["card_bg"])
         cards_frame.add_widget(device_card, 0, 0, rowspan=1, colspan=1)
         
-        # Create keyboard status display
-        kb_frame = ThemedFrame(device_card.content_frame, bg=self.colors["card_bg"])
+        # Create a scrollable frame for device icons
+        icon_canvas = tk.Canvas(device_card.content_frame, bg=self.colors["card_bg"], highlightthickness=0, height=90)
+        icon_scrollbar = tk.Scrollbar(device_card.content_frame, orient="vertical", command=icon_canvas.yview)
+        icon_frame = ThemedFrame(icon_canvas, bg=self.colors["card_bg"])
+
+        icon_frame.bind(
+            "<Configure>",
+            lambda e: icon_canvas.configure(scrollregion=icon_canvas.bbox("all"))
+        )
+        icon_canvas.create_window((0, 0), window=icon_frame, anchor="nw")
+        icon_canvas.configure(yscrollcommand=icon_scrollbar.set)
+
+        icon_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        icon_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Now add your keyboard and mouse icon/label/status/toggle to icon_frame instead of device_card.content_frame
+        kb_frame = ThemedFrame(icon_frame, bg=self.colors["card_bg"])
         kb_frame.pack(fill=tk.X, pady=5)
         
         # Load keyboard icon
@@ -308,7 +323,7 @@ class KeylockDashboard:
         self.kb_toggle_btn = kb_toggle
         
         # Create mouse status display
-        mouse_frame = ThemedFrame(device_card.content_frame, bg=self.colors["card_bg"])
+        mouse_frame = ThemedFrame(icon_frame, bg=self.colors["card_bg"])
         mouse_frame.pack(fill=tk.X, pady=5)
         
         # Load mouse icon
@@ -387,52 +402,70 @@ class KeylockDashboard:
             fg=self.colors["text"]
         ).pack(side=tk.LEFT, padx=(0, 5))
         
+        # Device selection for timer
+        self.timer_device_var = tk.StringVar(value="both")
+        device_select_frame = ThemedFrame(timer_card.content_frame, bg=self.colors["card_bg"])
+        device_select_frame.pack(pady=(0, 5))
+
+        tk.Label(
+            device_select_frame,
+            text="Device to lock:",
+            font=("Segoe UI", 10),
+            bg=self.colors["card_bg"],
+            fg=self.colors["text"]
+        ).pack(side=tk.LEFT, padx=(0, 5))
+
+        tk.Radiobutton(
+            device_select_frame,
+            text="Keyboard",
+            variable=self.timer_device_var,
+            value="keyboard",
+            bg=self.colors["card_bg"],
+            fg=self.colors["text"],
+            selectcolor=self.colors["bg"]
+        ).pack(side=tk.LEFT, padx=2)
+
+        tk.Radiobutton(
+            device_select_frame,
+            text="Mouse",
+            variable=self.timer_device_var,
+            value="mouse",
+            bg=self.colors["card_bg"],
+            fg=self.colors["text"],
+            selectcolor=self.colors["bg"]
+        ).pack(side=tk.LEFT, padx=2)
+
+        tk.Radiobutton(
+            device_select_frame,
+            text="Both",
+            variable=self.timer_device_var,
+            value="both",
+            bg=self.colors["card_bg"],
+            fg=self.colors["text"],
+            selectcolor=self.colors["bg"]
+        ).pack(side=tk.LEFT, padx=2)
+        
         for minutes in ["5", "10", "30", "60"]:
             preset_btn = ThemedButton(
                 preset_frame,
                 text=f"{minutes}m",
-                command=lambda m=minutes: self._start_preset_timer(m),
+                command=lambda m=minutes: self._start_preset_timer(m, self.timer_device_var.get()),
                 width=4,
                 bg=self.colors["bg"],
                 fg=self.colors["text"]
             )
             preset_btn.pack(side=tk.LEFT, padx=3)
         
-        # Upcoming schedules card
-        schedule_card = Card(cards_frame, title="Next Scheduled Events", bg=self.colors["card_bg"])
-        cards_frame.add_widget(schedule_card, 1, 0, rowspan=1, colspan=2)
-        
-        # Create schedule list with a scrollbar
-        schedule_frame = ThemedFrame(schedule_card.content_frame, bg=self.colors["card_bg"])
-        schedule_frame.pack(fill=tk.BOTH, expand=True, pady=5)
-        
-        schedule_list = ttk.Treeview(
-            schedule_frame,
-            columns=("name", "time", "action", "duration"),
-            show="headings",
-            height=5
+        # Reset Timer button
+        reset_btn = ThemedButton(
+            timer_controls,
+            text="Reset Timer",
+            command=self._reset_timer,
+            bg=self.colors["warning"],
+            fg="#FFFFFF",
+            width=12
         )
-        schedule_list.heading("name", text="Name")
-        schedule_list.heading("time", text="Time")
-        schedule_list.heading("action", text="Action")
-        schedule_list.heading("duration", text="Duration")
-        
-        schedule_list.column("name", width=150)
-        schedule_list.column("time", width=150)
-        schedule_list.column("action", width=100)
-        schedule_list.column("duration", width=100)
-        
-        scrollbar = ttk.Scrollbar(schedule_frame, orient="vertical", command=schedule_list.yview)
-        schedule_list.configure(yscrollcommand=scrollbar.set)
-        
-        schedule_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        self.schedule_list = schedule_list
-        
-        # Sample data for now
-        schedule_list.insert("", tk.END, values=("Work Focus", "14:00", "Both", "60 min"))
-        schedule_list.insert("", tk.END, values=("Break Time", "16:30", "Both", "15 min"))
+        reset_btn.pack(side=tk.LEFT, padx=5)
         
         # Footer with status
         footer = ThemedFrame(self.main_area, bg=self.colors["bg"])
@@ -879,9 +912,9 @@ class KeylockDashboard:
         except Exception as e:
             self.update_status(f"Error opening countdown dialog: {str(e)}")
     
-    def _start_preset_timer(self, minutes):
+    def _start_preset_timer(self, minutes, device="both"):
         """Start a preset timer"""
-        self._start_timer(minutes, "both", True)
+        self._start_timer(minutes, device, True)
     
     def _start_timer(self, minutes, lock_type="both", auto_unlock=True):
         """Start a timer with the specified duration and lock type"""
@@ -1225,6 +1258,12 @@ Version: 2.0
                 
         except Exception as e:
             print(f"Error toggling theme: {str(e)}")
+
+    def _reset_timer(self):
+        """Reset the timer to 00:00:00 and stop it if running"""
+        self.timer_running = False
+        self.timer_label.configure(text="00:00:00")
+        self.update_status("Timer reset")
 
     def run(self):
         """Run the dashboard application"""
